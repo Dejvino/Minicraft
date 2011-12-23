@@ -42,6 +42,9 @@ public class Tile implements Serializable {
 	public static Tile goldOre = new OreTile(20, Resource.goldOre);
 	public static Tile gemOre = new OreTile(21, Resource.gem);
 	public static Tile cloudCactus = new CloudCactusTile(22);
+	
+	public static Tile woodenWall = new WoodenWallTile(100);
+	public static Tile rockWall = new RockWallTile(101);
 
 	public final byte id;
 

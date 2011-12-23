@@ -5,7 +5,11 @@ import java.io.Serializable;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.level.Level;
+import com.mojang.ld22.level.tile.DirtTile;
+import com.mojang.ld22.level.tile.GrassTile;
+import com.mojang.ld22.level.tile.RockWallTile;
 import com.mojang.ld22.level.tile.Tile;
+import com.mojang.ld22.level.tile.WoodenWallTile;
 
 public class Resource implements Serializable {
 	
@@ -47,6 +51,20 @@ public class Resource implements Serializable {
 	}
 
 	public boolean interactOn(Tile tile, Level level, int xt, int yt, Player player, int attackDir) {
+		if (this.equals(wood)) {
+			// build wooden wall on dirt and grass
+			if (DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) {
+				level.setTile(xt, yt, WoodenWallTile.woodenWall, 0);
+				return true;
+			}
+		}
+		if (this.equals(stone)) {
+			// build rock wall on dirt and grass
+			if (DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) {
+				level.setTile(xt, yt, RockWallTile.rockWall, 0);
+				return true;
+			}
+		}
 		return false;
 	}
 	

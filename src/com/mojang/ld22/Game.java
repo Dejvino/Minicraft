@@ -43,6 +43,7 @@ public class Game extends Canvas implements Runnable, Externalizable {
 	private boolean running = false;
 	private Screen screen;
 	private Screen lightScreen;
+	private Screen fogScreen;
 	private InputHandler input = new InputHandler(this);
 
 	private int[] colors = new int[256];
@@ -139,6 +140,7 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		try {
 			screen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
 			lightScreen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
+			fogScreen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -245,6 +247,7 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		if (yScroll < 16) yScroll = 16;
 		if (xScroll > level.w * 16 - screen.w - 16) xScroll = level.w * 16 - screen.w - 16;
 		if (yScroll > level.h * 16 - screen.h - 16) yScroll = level.h * 16 - screen.h - 16;
+		
 		if (currentLevel > 3) {
 			int col = Color.get(20, 20, 121, 121);
 			for (int y = 0; y < 14; y++)
@@ -253,9 +256,18 @@ public class Game extends Canvas implements Runnable, Externalizable {
 				}
 		}
 
+	    // render level tiles
 		level.renderBackground(screen, xScroll, yScroll);
+		
+		// render level sprites
 		level.renderSprites(screen, xScroll, yScroll);
-
+		
+		// render fog-of-war
+		fogScreen.clear(0);
+		level.renderFog(fogScreen, xScroll, yScroll);
+		screen.overlay(fogScreen, xScroll, yScroll);
+		
+		// render darkness
 		if (currentLevel < 3) {
 			lightScreen.clear(0);
 			level.renderLight(lightScreen, xScroll, yScroll);

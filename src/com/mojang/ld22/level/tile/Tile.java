@@ -68,6 +68,22 @@ public class Tile implements Serializable {
 	public int getLightRadius(Level level, int x, int y) {
 		return 0;
 	}
+	
+	/**
+	 * Returns the amount of visibility blocking power.
+	 * 
+	 * The default implementation is that the entity can see through what it
+	 * can pass through.
+	 * 
+	 * @param level
+	 * @param x
+	 * @param y
+	 * @param e
+	 * @return Value from 0 (see-through) to 100 (completely blocks), 
+	 */
+	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
+		return mayPass(level, x, y, e) ? 0 : 100;
+	}
 
 	public void hurt(Level level, int x, int y, Entity source, int dmg, int attackDir) {
 	}

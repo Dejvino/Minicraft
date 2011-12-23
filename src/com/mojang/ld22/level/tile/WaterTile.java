@@ -69,4 +69,8 @@ public class WaterTile extends Tile {
 			level.setTile(xn, yn, this, 0);
 		}
 	}
+	
+	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
+		return 0;
+	}
 }

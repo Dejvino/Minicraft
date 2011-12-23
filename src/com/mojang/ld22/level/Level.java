@@ -20,6 +20,7 @@ import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.entity.Slime;
 import com.mojang.ld22.entity.Wanderer;
 import com.mojang.ld22.entity.Zombie;
+import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.gfx.Screen;
 import com.mojang.ld22.level.levelgen.LevelGen;
 import com.mojang.ld22.level.tile.Tile;
@@ -39,6 +40,8 @@ public class Level implements Externalizable {
 	private int depth;
 	public int monsterDensity = 8;
 
+	private int randomFog = 0;
+	
 	public List<Entity> entities = new ArrayList<Entity>();
 	private Comparator<Entity> spriteSorter = new Comparator<Entity>() {
 		public int compare(Entity e0, Entity e1) {
@@ -183,10 +186,129 @@ public class Level implements Externalizable {
 		}
 		screen.setOffset(0, 0);
 	}
-
-	// private void renderLight(Screen screen, int x, int y, int r) {
-	// screen.renderLight(x, y, r);
-	// }
+	
+	public void renderFog(Screen screen, int xScroll, int yScroll)
+	{
+		int visMax = 1000;
+		
+		// get sizes and positions (in tiles)
+		int xo = xScroll >> 4;
+		int yo = yScroll >> 4;
+		int w = (screen.w + 15) >> 4;
+		int h = (screen.h + 15) >> 4;
+		int pX = this.player.x >> 4;
+		int pY = this.player.y >> 4;
+		
+		// resolution of raytracing
+		float res = 8;
+		
+		// prepare visibility grid
+		int[][] visibility = new int[h+1][w+1];
+		
+		// for every point on the edge of the screen
+		int edgeMax = (int)((w+h)*2*res);
+		for (int edge = 0; edge < edgeMax; edge++) {
+			// determine the destination point (we do a loop)
+			int dstX;
+			int dstY;
+			if (edge < w*res) {
+				dstX = edge;
+				dstY = 0;
+			} else if (edge < (w+h)*res) {
+				dstX = (int)(w*res);
+				dstY = (int)((edge-(w*res)));
+			} else if (edge < (w+w+h)*res) {
+				dstX = (int)(edge - (w+h)*res);
+				dstY = (int)(h*res);
+			} else {
+				dstX = 0;
+				dstY = (int)(edgeMax-edge);
+			}
+			
+			// determine the ray properties
+			int rayPower = (int)(visMax / res);
+			int rayFall = (int)(0.4*rayPower);
+			int dist = (int)Math.sqrt(
+								Math.pow(xo + dstX/res - pX, 2)
+									+
+								Math.pow(yo + dstY/res - pY, 2));
+			int maxStep = dist*2;
+			
+			// perform step-calculations on the line |Player --> destination|
+			for (int step = 0; step <= maxStep; step++) {
+				float progress = step / (float)maxStep;
+				int curX = pX + (int)(((xo + dstX/res) - pX) * progress);
+				int curY = pY + (int)(((yo + dstY/res) - pY) * progress);
+			
+				if (curY - yo < 0 || curX - xo < 0) {
+					continue;
+				}
+				
+				// compute new visibility
+				int curVis = visibility[curY - yo][curX - xo];
+				int newVis = (int) (curVis + rayPower);
+				if (curVis < newVis) {
+					visibility[curY - yo][curX - xo] = newVis;
+				}
+				
+				// lower the strength of the ray if this tile is blocking the view
+				int visBlock = this.getTile(curX, curY).getVisibilityBlocking(this, curX, curY, player);
+				if (visBlock > 0) {
+					int tileRayFall = (int)(rayFall * (visBlock / 100.0));
+					rayPower -= tileRayFall + randomFog;
+					if (rayPower <= 0) {
+						// this ray is dead
+						break;
+					}
+				}
+			}
+		}
+		
+		// normalize visibility
+		for (int y = 0; y <= h; y++) {
+			for (int x = 0; x <= w; x++) {
+				int vis = visibility[y][x] / 10;
+				if (vis > 100) {
+					vis = 100;
+				}
+				if (vis < 0) {
+					vis = 0;
+				}
+				visibility[y][x] = vis;
+			}
+		}
+		
+		// reset screen for rendering
+		screen.clear(Color.get(999));
+		screen.setOffset(xScroll, yScroll);
+		
+		// render blocks of fog (4x4)
+		for (int y = 0; y <= h; y++) {
+			for (int x = 0; x <= w; x++) {
+				int vis = visibility[y][x];
+				int visBlend = vis;
+				int xr = (xo+x)*16;
+				int yr = (yo+y)*16;
+				for (int z = 0; z < 4; z++) {
+					int zx = (z % 2)-1;
+					int zy = (z / 2)-1;
+					for (int s = 0; s < 4; s++) {
+						int sx = (s % 2);
+						int sy = (s / 2);
+						if (y+sy+zy < 0 || y+sy+zy >= h || x+sx+zx < 0 || x+sx+zx >= w) {
+							visBlend += vis;
+						} else {
+							visBlend += visibility[y+sy+zy][x+sx+zx];
+						}
+					}
+					visBlend /= 5;
+					int color = visBlend * 2;					
+					screen.renderPoint(xr + zx*8, yr + zy*8, 8, color);
+				}
+			}
+		}
+		screen.setOffset(0, 0);
+	}
 
 	private void sortAndRender(Screen screen, List<Entity> list) {
 		Collections.sort(list, spriteSorter);
@@ -281,6 +403,16 @@ public class Level implements Externalizable {
 	public void tick() {
 		trySpawn(1);
 
+		/*if (random.nextInt(100) == 0) {
+			randomFog += random.nextInt(3)-1;
+			if (randomFog < -2) {
+				randomFog = -2;
+			}
+			if (randomFog > 2) {
+				randomFog = 2;
+			}
+		}*/
+		
 		for (int i = 0; i < w * h / 50; i++) {
 			int xt = random.nextInt(w);
 			int yt = random.nextInt(w);

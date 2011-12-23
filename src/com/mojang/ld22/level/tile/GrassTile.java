@@ -1,5 +1,6 @@
 package com.mojang.ld22.level.tile;
 
+import com.mojang.ld22.entity.Entity;
 import com.mojang.ld22.entity.ItemEntity;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.gfx.Color;
@@ -90,5 +91,9 @@ public class GrassTile extends Tile {
 		}
 		return false;
 
+	}
+	
+	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
+		return 5;
 	}
 }

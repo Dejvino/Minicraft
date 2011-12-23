@@ -51,4 +51,8 @@ public class CactusTile extends Tile {
 		int damage = level.getData(xt, yt);
 		if (damage > 0) level.setData(xt, yt, damage - 1);
 	}
+	
+	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
+		return 20;
+	}
 }

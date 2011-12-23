@@ -106,4 +106,8 @@ public class TreeTile extends Tile {
 			level.setData(x, y, damage);
 		}
 	}
+	
+	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
+		return 80;
+	}
 }

@@ -13,9 +13,12 @@ import java.util.Random;
 
 import com.mojang.ld22.entity.AirWizard;
 import com.mojang.ld22.entity.Entity;
+import com.mojang.ld22.entity.LivingEntity;
 import com.mojang.ld22.entity.Mob;
+import com.mojang.ld22.entity.Npc;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.entity.Slime;
+import com.mojang.ld22.entity.Wanderer;
 import com.mojang.ld22.entity.Zombie;
 import com.mojang.ld22.gfx.Screen;
 import com.mojang.ld22.level.levelgen.LevelGen;
@@ -243,7 +246,7 @@ public class Level implements Externalizable {
 
 	public void trySpawn(int count) {
 		for (int i = 0; i < count; i++) {
-			Mob mob;
+			LivingEntity ent;
 
 			int minLevel = 1;
 			int maxLevel = 1;
@@ -255,13 +258,22 @@ public class Level implements Externalizable {
 			}
 
 			int lvl = random.nextInt(maxLevel - minLevel + 1) + minLevel;
-			if (random.nextInt(2) == 0)
-				mob = new Slime(lvl);
-			else
-				mob = new Zombie(lvl);
-
-			if (mob.findStartPos(this)) {
-				this.add(mob);
+			int type = random.nextInt(3);
+			switch (type) {
+				default:
+				case 0:
+					ent = new Slime(lvl);
+					break;
+				case 1:
+					ent = new Zombie(lvl);
+					break;
+				case 2:
+					ent = new Wanderer(lvl);
+					break;
+			}
+				
+			if (ent.findStartPos(this)) {
+				this.add(ent);
 			}
 		}
 	}

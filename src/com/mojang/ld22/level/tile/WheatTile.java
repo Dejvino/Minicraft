@@ -2,7 +2,6 @@ package com.mojang.ld22.level.tile;
 
 import com.mojang.ld22.entity.Entity;
 import com.mojang.ld22.entity.ItemEntity;
-import com.mojang.ld22.entity.Mob;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.gfx.Screen;
@@ -62,7 +61,7 @@ public class WheatTile extends Tile {
 		harvest(level, xt, yt);
 	}
 
-	public void hurt(Level level, int x, int y, Mob source, int dmg, int attackDir) {
+	public void hurt(Level level, int x, int y, Entity source, int dmg, int attackDir) {
 
 		harvest(level, x, y);
 	}

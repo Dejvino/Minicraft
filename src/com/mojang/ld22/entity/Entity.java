@@ -42,10 +42,11 @@ public class Entity implements Externalizable {
 		return false;
 	}
 
-	public void hurt(Mob mob, int dmg, int attackDir) {
+	public void hurt(Tile tile, int x, int y, int dmg) {
 	}
 
-	public void hurt(Tile tile, int x, int y, int dmg) {
+	public void hurt(Entity entity, int attackDamage, int attackDir)
+	{		
 	}
 
 	public boolean move(int xa, int ya) {

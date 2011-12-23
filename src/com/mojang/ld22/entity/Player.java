@@ -23,7 +23,7 @@ import com.mojang.ld22.level.tile.Tile;
 import com.mojang.ld22.screen.InventoryMenu;
 import com.mojang.ld22.sound.Sound;
 
-public class Player extends Mob {
+public class Player extends LivingEntity {
 	private InputHandler input;
 	private int attackTime, attackDir;
 

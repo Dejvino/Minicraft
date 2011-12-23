@@ -3,7 +3,6 @@ package com.mojang.ld22.level.tile;
 import com.mojang.ld22.entity.AirWizard;
 import com.mojang.ld22.entity.Entity;
 import com.mojang.ld22.entity.ItemEntity;
-import com.mojang.ld22.entity.Mob;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.entity.particle.SmashParticle;
 import com.mojang.ld22.entity.particle.TextParticle;
@@ -33,7 +32,7 @@ public class CloudCactusTile extends Tile {
 		return false;
 	}
 
-	public void hurt(Level level, int x, int y, Mob source, int dmg, int attackDir) {
+	public void hurt(Level level, int x, int y, Entity source, int dmg, int attackDir) {
 		hurt(level, x, y, 0);
 	}
 

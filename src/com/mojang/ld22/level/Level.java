@@ -1,5 +1,10 @@
 package com.mojang.ld22.level;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -16,7 +21,7 @@ import com.mojang.ld22.gfx.Screen;
 import com.mojang.ld22.level.levelgen.LevelGen;
 import com.mojang.ld22.level.tile.Tile;
 
-public class Level {
+public class Level implements Externalizable {
 	private Random random = new Random();
 
 	public int w, h;
@@ -41,6 +46,9 @@ public class Level {
 
 	};
 
+	public Level() {
+	}
+	
 	@SuppressWarnings("unchecked")
 	public Level(int w, int h, int level, Level parentLevel) {
 		if (level < 0) {
@@ -305,5 +313,55 @@ public class Level {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException
+	{
+		// config
+		this.data = (byte[])in.readObject();
+		this.depth = in.readInt();
+		this.dirtColor = in.readInt();
+		this.grassColor = in.readInt();
+		this.h = in.readInt();
+		this.monsterDensity = in.readInt();
+		this.sandColor = in.readInt();
+		this.tiles = (byte[])in.readObject();
+		this.w = in.readInt();
+		
+		this.entitiesInTiles = new ArrayList[this.w * this.h];
+		for (int i = 0; i < w * h; i++) {
+			this.entitiesInTiles[i] = new ArrayList<Entity>();
+		}
+		
+		// entities
+		int entCount = in.readInt();
+		this.entities.clear();
+		for (int i = 0; i < entCount; i++) {
+			Entity e = (Entity)in.readObject();
+			add(e);
+		}
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		// config
+		out.writeObject(this.data);
+		out.writeInt(this.depth);
+		out.writeInt(this.dirtColor);
+		out.writeInt(this.grassColor);
+		out.writeInt(this.h);
+		out.writeInt(this.monsterDensity);
+		out.writeInt(this.sandColor);
+		out.writeObject(this.tiles);
+		out.writeInt(this.w);
+		
+		// entities
+		out.writeInt(this.entities.size());
+		for (Entity e : this.entities) {
+			out.writeObject(e);
+		}
 	}
 }

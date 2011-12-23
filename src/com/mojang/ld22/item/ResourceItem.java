@@ -13,6 +13,10 @@ public class ResourceItem extends Item {
 	public Resource resource;
 	public int count = 1;
 
+	public ResourceItem(){
+		
+	}
+	
 	public ResourceItem(Resource resource) {
 		this.resource = resource;
 	}

@@ -1,5 +1,6 @@
 package com.mojang.ld22.level.tile;
 
+import java.io.Serializable;
 import java.util.Random;
 
 import com.mojang.ld22.entity.Entity;
@@ -10,7 +11,10 @@ import com.mojang.ld22.item.Item;
 import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 
-public class Tile {
+public class Tile implements Serializable {
+
+	private static final long serialVersionUID = 1L;
+	
 	public static int tickCount = 0;
 	protected Random random = new Random();
 
@@ -85,5 +89,27 @@ public class Tile {
 
 	public boolean connectsToLiquid() {
 		return connectsToWater || connectsToLava;
+	}
+	
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == null) {
+			return false;
+		}
+		if (! (obj instanceof Tile)) {
+			return false;
+		}
+		Tile tile = (Tile)obj;
+		if (this.id != tile.id) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return this.id;
 	}
 }

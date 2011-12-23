@@ -1,5 +1,9 @@
 package com.mojang.ld22.entity;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+
 import com.mojang.ld22.entity.particle.TextParticle;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.level.Level;
@@ -71,7 +75,7 @@ public class Mob extends Entity {
 
 	protected boolean isSwimming() {
 		Tile tile = level.getTile(x >> 4, y >> 4);
-		return tile == Tile.water || tile == Tile.lava;
+		return Tile.water.equals(tile) || Tile.lava.equals(tile);
 	}
 
 	public boolean blocks(Entity e) {
@@ -136,5 +140,23 @@ public class Mob extends Entity {
 		}
 
 		return false;
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException
+	{
+		super.readExternal(in);
+		/*
+		this.dir
+		this.health
+		in.read*/
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		// TODO
 	}
 }

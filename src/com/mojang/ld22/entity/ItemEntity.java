@@ -1,11 +1,13 @@
 package com.mojang.ld22.entity;
 
+import java.io.Serializable;
+
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.gfx.Screen;
 import com.mojang.ld22.item.Item;
 import com.mojang.ld22.sound.Sound;
 
-public class ItemEntity extends Entity {
+public class ItemEntity extends Entity implements Serializable {
 	private int lifeTime;
 	protected int walkDist = 0;
 	protected int dir = 0;
@@ -16,6 +18,11 @@ public class ItemEntity extends Entity {
 	public Item item;
 	private int time = 0;
 
+	public ItemEntity()
+	{
+		
+	}
+	
 	public ItemEntity(Item item, int x, int y) {
 		this.item = item;
 		xx = this.x = x;

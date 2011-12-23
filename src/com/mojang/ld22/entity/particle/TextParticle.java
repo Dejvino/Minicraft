@@ -12,6 +12,10 @@ public class TextParticle extends Entity {
 	public double xa, ya, za;
 	public double xx, yy, zz;
 
+	public TextParticle() {
+		
+	}
+	
 	public TextParticle(String msg, int x, int y, int col) {
 		this.msg = msg;
 		this.x = x;

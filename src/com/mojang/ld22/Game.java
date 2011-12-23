@@ -7,7 +7,11 @@ import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
@@ -26,13 +30,13 @@ import com.mojang.ld22.screen.Menu;
 import com.mojang.ld22.screen.TitleMenu;
 import com.mojang.ld22.screen.WonMenu;
 
-public class Game extends Canvas implements Runnable {
+public class Game extends Canvas implements Runnable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Random random = new Random();
 	public static final String NAME = "Minicraft";
 	public static final int HEIGHT = 120;
 	public static final int WIDTH = 160;
-	private static final int SCALE = 3;
+	public static final int SCALE = 3;
 
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
@@ -96,7 +100,25 @@ public class Game extends Canvas implements Runnable {
 		}
 	}
 
-	private void init() {
+	/**
+	 * Performs a full initialization of the game - graphics, generated levels,
+	 * etc. The result is a fresh new game ready to be played.
+	 * 
+	 * This method should NOT be used for loaded games. Loaded games are inited
+	 * as the player starts a new game. After loading them we call initGraphics
+	 * and we are done.
+	 */
+	public void init() {
+		initGraphics();
+
+		resetGame();
+		setMenu(new TitleMenu());
+	}
+	
+	/**
+	 * Performs initialization of the game graphics.
+	 */
+	protected void initGraphics() {
 		int pp = 0;
 		for (int r = 0; r < 6; r++) {
 			for (int g = 0; g < 6; g++) {
@@ -120,9 +142,6 @@ public class Game extends Canvas implements Runnable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		resetGame();
-		setMenu(new TitleMenu());
 	}
 
 	public void run() {
@@ -132,8 +151,6 @@ public class Game extends Canvas implements Runnable {
 		int frames = 0;
 		int ticks = 0;
 		long lastTimer1 = System.currentTimeMillis();
-
-		init();
 
 		while (running) {
 			long now = System.nanoTime();
@@ -145,6 +162,10 @@ public class Game extends Canvas implements Runnable {
 				tick();
 				unprocessed -= 1;
 				shouldRender = true;
+			}
+			
+			if (!running) {
+				shouldRender = false;
 			}
 
 			try {
@@ -160,7 +181,7 @@ public class Game extends Canvas implements Runnable {
 
 			if (System.currentTimeMillis() - lastTimer1 > 1000) {
 				lastTimer1 += 1000;
-				System.out.println(ticks + " ticks, " + frames + " fps");
+				//System.out.println(ticks + " ticks, " + frames + " fps");
 				frames = 0;
 				ticks = 0;
 			}
@@ -329,26 +350,65 @@ public class Game extends Canvas implements Runnable {
 		pendingLevelChange = dir;
 	}
 
-	public static void main(String[] args) {
-		Game game = new Game();
-		game.setMinimumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		game.setMaximumSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-		game.setPreferredSize(new Dimension(WIDTH * SCALE, HEIGHT * SCALE));
-
-		JFrame frame = new JFrame(Game.NAME);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLayout(new BorderLayout());
-		frame.add(game, BorderLayout.CENTER);
-		frame.pack();
-		frame.setResizable(false);
-		frame.setLocationRelativeTo(null);
-		frame.setVisible(true);
-
-		game.start();
-	}
-
 	public void won() {
 		wonTimer = 60 * 3;
 		hasWon = true;
+	}
+
+	/**
+	 * Called after loading a saved game.
+	 * 
+	 * This method is responsible for bringing a newly de-serialized game
+	 * back to life.
+	 */
+	public void loadGame()
+	{
+		this.initGraphics();
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException
+	{
+		this.colors = (int[])in.readObject();
+		this.currentLevel = in.readInt();
+		this.gameTime = in.readInt();
+		this.hasWon = in.readBoolean();
+		this.level = (Level)in.readObject();
+		this.levels = (Level[])in.readObject();
+		this.lightScreen = (Screen)in.readObject();
+		this.menu = (Menu)in.readObject();
+		this.pendingLevelChange = in.readInt();
+		//this.pixels = (int[])in.readObject(); // generated in initGraphics()
+		this.player = (Player)in.readObject();
+		this.playerDeadTime = in.readInt();
+		this.tickCount = in.readInt();
+		this.wonTimer = in.readInt();
+		this.running = in.readBoolean();
+		this.screen = (Screen)in.readObject();
+		
+		this.player.setGame(this);
+		this.player.setInput(this.input);
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		out.writeObject(this.colors);
+		out.writeInt(this.currentLevel);
+		out.writeInt(this.gameTime);
+		out.writeBoolean(this.hasWon);
+		out.writeObject(this.level);
+		out.writeObject(this.levels);
+		out.writeObject(this.lightScreen);
+		out.writeObject(this.menu);
+		out.writeInt(this.pendingLevelChange);
+		//out.writeObject(this.pixels); // generated in initGraphics()
+		out.writeObject(this.player);
+		out.writeInt(this.playerDeadTime);
+		out.writeInt(this.tickCount);
+		out.writeInt(this.wonTimer);
+		out.writeBoolean(this.running);
+		out.writeObject(this.screen);
 	}
 }

@@ -10,6 +10,9 @@ public class Slime extends Mob {
 	private int jumpTime = 0;
 	private int lvl;
 
+	public Slime() {
+	}
+	
 	public Slime(int lvl) {
 		this.lvl = lvl;
 		x = random.nextInt(64 * 16);

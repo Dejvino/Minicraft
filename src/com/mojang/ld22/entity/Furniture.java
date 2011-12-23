@@ -11,6 +11,9 @@ public class Furniture extends Entity {
 	public String name;
 	private Player shouldTake;
 
+	public Furniture() {
+	}
+	
 	public Furniture(String name) {
 		this.name = name;
 		xr = 3;

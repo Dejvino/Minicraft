@@ -1,8 +1,12 @@
 package com.mojang.ld22.entity;
 
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.List;
 
 import com.mojang.ld22.Game;
+import com.mojang.ld22.GameContainer;
 import com.mojang.ld22.InputHandler;
 import com.mojang.ld22.entity.particle.TextParticle;
 import com.mojang.ld22.gfx.Color;
@@ -35,6 +39,10 @@ public class Player extends Mob {
 	private int onStairDelay;
 	public int invulnerableTime = 0;
 
+	public Player() {
+		
+	}
+	
 	public Player(Game game, InputHandler input) {
 		this.game = game;
 		this.input = input;
@@ -46,6 +54,16 @@ public class Player extends Mob {
 		inventory.add(new PowerGloveItem());
 	}
 
+	public void setGame(Game game)
+	{
+		this.game = game;
+	}
+	
+	public void setInput(InputHandler input)
+	{
+		this.input = input;
+	}
+	
 	public void tick() {
 		super.tick();
 
@@ -112,6 +130,12 @@ public class Player extends Mob {
 			if (!use()) {
 				game.setMenu(new InventoryMenu(this));
 			}
+		}
+		if (input.save.clicked) {
+			GameContainer.getInstance().saveGame();
+		}
+		if (input.load.clicked) {
+			GameContainer.getInstance().loadGame();
 		}
 		if (attackTime > 0) attackTime--;
 
@@ -391,5 +415,42 @@ public class Player extends Mob {
 	public void gameWon() {
 		level.player.invulnerableTime = 60 * 5;
 		game.won();
+	}
+	
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException
+	{
+		super.readExternal(in);
+		attackDir = in.readInt();
+		attackTime = in.readInt();
+		inventory = (Inventory)in.readObject();
+		attackItem = (Item)in.readObject();
+		activeItem = (Item)in.readObject();
+		stamina = in.readInt();
+		staminaRecharge = in.readInt();
+		staminaRechargeDelay = in.readInt();
+		score = in.readInt();
+		maxStamina = in.readInt();
+		onStairDelay = in.readInt();
+		invulnerableTime = in.readInt();
+	}
+	
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		super.writeExternal(out);
+		out.writeInt(attackDir);
+		out.writeInt(attackTime);
+		out.writeObject(inventory);
+		out.writeObject(attackItem);
+		out.writeObject(activeItem);
+		out.writeInt(stamina);
+		out.writeInt(staminaRecharge);
+		out.writeInt(staminaRechargeDelay);
+		out.writeInt(score);
+		out.writeInt(maxStamina);
+		out.writeInt(onStairDelay);
+		out.writeInt(invulnerableTime);
 	}
 }

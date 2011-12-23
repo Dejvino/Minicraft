@@ -1,14 +1,20 @@
 package com.mojang.ld22.item;
 
+import java.io.Serializable;
+
 import com.mojang.ld22.entity.Entity;
 import com.mojang.ld22.entity.ItemEntity;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.gfx.Screen;
+import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 import com.mojang.ld22.level.tile.Tile;
 import com.mojang.ld22.screen.ListItem;
 
-public class Item implements ListItem {
+public class Item implements ListItem, Serializable {
+	
+	private static final long serialVersionUID = 1L;
+
 	public int getColor() {
 		return 0;
 	}
@@ -52,5 +58,27 @@ public class Item implements ListItem {
 
 	public boolean matches(Item item) {
 		return item.getClass() == getClass();
+	}
+	
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == null) {
+			return false;
+		}
+		if (! (obj instanceof Item)) {
+			return false;
+		}
+		Item item = (Item)obj;
+		if (!this.getName().equals(item.getName())) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return this.getName().hashCode();
 	}
 }

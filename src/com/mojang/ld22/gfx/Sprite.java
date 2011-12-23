@@ -1,6 +1,8 @@
 package com.mojang.ld22.gfx;
 
-public class Sprite {
+import java.io.Serializable;
+
+public class Sprite implements Serializable {
 	public int x, y;
 	public int img;
 	public int col;

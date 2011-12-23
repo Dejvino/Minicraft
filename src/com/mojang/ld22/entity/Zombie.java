@@ -10,6 +10,10 @@ public class Zombie extends Mob {
 	private int lvl;
 	private int randomWalkTime = 0;
 
+	public Zombie() {
+		
+	}
+	
 	public Zombie(int lvl) {
 		this.lvl = lvl;
 		x = random.nextInt(64 * 16);

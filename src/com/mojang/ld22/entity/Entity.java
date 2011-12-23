@@ -1,5 +1,9 @@
 package com.mojang.ld22.entity;
 
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.util.List;
 import java.util.Random;
 
@@ -8,7 +12,7 @@ import com.mojang.ld22.item.Item;
 import com.mojang.ld22.level.Level;
 import com.mojang.ld22.level.tile.Tile;
 
-public class Entity {
+public class Entity implements Externalizable {
 	protected final Random random = new Random();
 	public int x, y;
 	public int xr = 6;
@@ -130,5 +134,28 @@ public class Entity {
 
 	public int getLightRadius() {
 		return 0;
+	}
+
+	@Override
+	public void readExternal(ObjectInput in) throws IOException,
+			ClassNotFoundException
+	{
+		this.removed = in.readBoolean();
+		this.x = in.readInt();
+		this.xr = in.readInt();
+		this.y = in.readInt();
+		this.yr = in.readInt();
+		// ignoring this.level, entity is loaded by Level
+	}
+
+	@Override
+	public void writeExternal(ObjectOutput out) throws IOException
+	{
+		out.writeBoolean(this.removed);
+		out.writeInt(this.x);
+		out.writeInt(this.xr);
+		out.writeInt(this.y);
+		out.writeInt(this.yr);
+		// ignoring this.level, entity is loaded by Level
 	}
 }

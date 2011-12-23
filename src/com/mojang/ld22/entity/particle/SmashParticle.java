@@ -8,6 +8,10 @@ import com.mojang.ld22.sound.Sound;
 public class SmashParticle extends Entity {
 	private int time = 0;
 
+	public SmashParticle() {
+		
+	}
+	
 	public SmashParticle(int x, int y) {
 		this.x = x;
 		this.y = y;

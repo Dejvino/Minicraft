@@ -12,6 +12,10 @@ public class Spark extends Entity {
 	private int time;
 	private AirWizard owner;
 
+	public Spark() {
+		
+	}
+	
 	public Spark(AirWizard owner, double xa, double ya) {
 		this.owner = owner;
 		xx = this.x = owner.x;

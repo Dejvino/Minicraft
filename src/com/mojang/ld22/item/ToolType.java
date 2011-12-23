@@ -1,6 +1,11 @@
 package com.mojang.ld22.item;
 
-public class ToolType {
+import java.io.Serializable;
+
+public class ToolType implements Serializable {
+	
+	private static final long serialVersionUID = 8977442344072519611L;
+	
 	public static ToolType shovel = new ToolType("Shvl", 0);
 	public static ToolType hoe = new ToolType("Hoe", 1);
 	public static ToolType sword = new ToolType("Swrd", 2);
@@ -13,5 +18,27 @@ public class ToolType {
 	private ToolType(String name, int sprite) {
 		this.name = name;
 		this.sprite = sprite;
+	}
+	
+	@Override
+	public boolean equals(Object obj)
+	{
+		if (obj == null) {
+			return false;
+		}
+		if (! (obj instanceof ToolType)) {
+			return false;
+		}
+		ToolType type = (ToolType)obj;
+		if (!this.name.equals(type.name)) {
+			return false;
+		}
+		return true;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		return this.name.hashCode();
 	}
 }

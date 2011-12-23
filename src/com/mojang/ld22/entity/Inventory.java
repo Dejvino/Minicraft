@@ -1,5 +1,6 @@
 package com.mojang.ld22.entity;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,7 +8,10 @@ import com.mojang.ld22.item.Item;
 import com.mojang.ld22.item.ResourceItem;
 import com.mojang.ld22.item.resource.Resource;
 
-public class Inventory {
+public class Inventory implements Serializable {
+	
+	private static final long serialVersionUID = 1L;
+	
 	public List<Item> items = new ArrayList<Item>();
 
 	public void add(Item item) {
@@ -32,7 +36,7 @@ public class Inventory {
 		for (int i = 0; i < items.size(); i++) {
 			if (items.get(i) instanceof ResourceItem) {
 				ResourceItem has = (ResourceItem) items.get(i);
-				if (has.resource == resource) return has;
+				if (has.resource.equals(resource)) return has;
 			}
 		}
 		return null;

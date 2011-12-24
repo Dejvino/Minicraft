@@ -4,18 +4,17 @@ import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
+import com.mojang.ld22.Game;
+import com.mojang.ld22.GameContainer;
 import com.mojang.ld22.entity.AirWizard;
 import com.mojang.ld22.entity.Entity;
 import com.mojang.ld22.entity.LivingEntity;
-import com.mojang.ld22.entity.Mob;
-import com.mojang.ld22.entity.Npc;
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.entity.Slime;
 import com.mojang.ld22.entity.Wanderer;
@@ -25,7 +24,10 @@ import com.mojang.ld22.gfx.Screen;
 import com.mojang.ld22.level.levelgen.LevelGen;
 import com.mojang.ld22.level.tile.Tile;
 
-public class Level implements Externalizable {
+public class Level implements Externalizable
+{
+	private static final long serialVersionUID = -7288529757348475493L;
+	
 	private Random random = new Random();
 
 	public int w, h;
@@ -40,7 +42,8 @@ public class Level implements Externalizable {
 	private int depth;
 	public int monsterDensity = 8;
 
-	private int randomFog = 0;
+	private int dayFog = 0;
+	public static final int MAX_FOG = 20;
 	
 	public List<Entity> entities = new ArrayList<Entity>();
 	private Comparator<Entity> spriteSorter = new Comparator<Entity>() {
@@ -178,7 +181,9 @@ public class Level implements Externalizable {
 					Entity e = entities.get(i);
 					// e.render(screen);
 					int lr = e.getLightRadius();
-					if (lr > 0) screen.renderLight(e.x - 1, e.y - 4, lr * 8);
+					if (lr > 0) {
+						screen.renderLight(e.x - 1, e.y - 4, lr * 8);
+					}
 				}
 				int lr = getTile(x, y).getLightRadius(this, x, y);
 				if (lr > 0) screen.renderLight(x * 16 + 8, y * 16 + 8, lr * 8);
@@ -187,20 +192,30 @@ public class Level implements Externalizable {
 		screen.setOffset(0, 0);
 	}
 	
-	public void renderFog(Screen screen, int xScroll, int yScroll)
+	public void renderFog(Screen screen, Screen light, int xScroll, int yScroll)
 	{
 		int visMax = 1000;
 		
 		// get sizes and positions (in tiles)
 		int xo = xScroll >> 4;
 		int yo = yScroll >> 4;
-		int w = (screen.w + 15) >> 4;
-		int h = (screen.h + 15) >> 4;
-		int pX = this.player.x >> 4;
-		int pY = this.player.y >> 4;
+		int w = (screen.w >> 4) + 1;
+		int h = (screen.h >> 4) + 1;
+		
+		// change to a rectangle to make better raytracing
+		if (w > h) {
+			yo -= (w-h) / 2;
+			h = w;
+		} else {
+			xo -= (h-w) / 2;
+			w = h;
+		}
+		
+		int pX = ((xScroll+8) >> 4) + w / 2;//this.player.x >> 4;
+		int pY = yo + h / 2;//this.player.y >> 4;
 		
 		// resolution of raytracing
-		float res = 8;
+		float res = 10;
 		
 		// prepare visibility grid
 		int[][] visibility = new int[h+1][w+1];
@@ -209,34 +224,38 @@ public class Level implements Externalizable {
 		int edgeMax = (int)((w+h)*2*res);
 		for (int edge = 0; edge < edgeMax; edge++) {
 			// determine the destination point (we do a loop)
-			int dstX;
-			int dstY;
+			double dstX;
+			double dstY;
 			if (edge < w*res) {
 				dstX = edge;
 				dstY = 0;
 			} else if (edge < (w+h)*res) {
-				dstX = (int)(w*res);
-				dstY = (int)((edge-(w*res)));
+				dstX = (w*res);
+				dstY = ((edge-(w*res)));
 			} else if (edge < (w+w+h)*res) {
-				dstX = (int)(edge - (w+h)*res);
-				dstY = (int)(h*res);
-			} else {
+				dstX = (edge - (w+h)*res);
+				dstY = (h*res);
+			} else if (edge < (w+w+h+h)*res) {
 				dstX = 0;
-				dstY = (int)(edgeMax-edge);
+				dstY = (edgeMax-edge);
+			} else {
+				throw new RuntimeException("raytracing edge value");
 			}
 			
 			// determine the ray properties
-			int rayPower = (int)(visMax / res);
-			int rayFall = (int)(0.4*rayPower);
-			int dist = (int)Math.sqrt(
+			double dist = Math.sqrt(
 								Math.pow(xo + dstX/res - pX, 2)
 									+
 								Math.pow(yo + dstY/res - pY, 2));
-			int maxStep = dist*2;
+			double maxStepModif = 11;
+			int maxStep = (int)(dist*maxStepModif);
+			double rayPower = (visMax);
+			double rayFall = (rayPower / (dist * maxStepModif * 0.1));
+			
 			
 			// perform step-calculations on the line |Player --> destination|
 			for (int step = 0; step <= maxStep; step++) {
-				float progress = step / (float)maxStep;
+				double progress = step / (float)maxStep;
 				int curX = pX + (int)(((xo + dstX/res) - pX) * progress);
 				int curY = pY + (int)(((yo + dstY/res) - pY) * progress);
 			
@@ -246,20 +265,24 @@ public class Level implements Externalizable {
 				
 				// compute new visibility
 				int curVis = visibility[curY - yo][curX - xo];
-				int newVis = (int) (curVis + rayPower);
+				double lightLevel = 0.5 * light.getPixel(((curX) << 4) - xScroll, ((curY) << 4) - yScroll);
+				int newVis = (int)(curVis + rayPower);
 				if (curVis < newVis) {
 					visibility[curY - yo][curX - xo] = newVis;
 				}
 				
 				// lower the strength of the ray if this tile is blocking the view
 				int visBlock = this.getTile(curX, curY).getVisibilityBlocking(this, curX, curY, player);
-				if (visBlock > 0) {
-					int tileRayFall = (int)(rayFall * (visBlock / 100.0));
-					rayPower -= tileRayFall + randomFog;
-					if (rayPower <= 0) {
-						// this ray is dead
-						break;
-					}
+				double visBlockCoef = (visBlock / 100.0);
+				double tileRayFall = (rayFall * visBlockCoef);
+				double lightBlock = (dayFog/maxStepModif*res) - (lightLevel);
+				if (lightBlock < 0) {
+					lightBlock = 0;
+				}
+				rayPower -= tileRayFall + lightBlock;
+				if (rayPower <= 0) {
+					// this ray is dead, but we must keep it because of light
+					//break;
 				}
 			}
 		}
@@ -267,9 +290,9 @@ public class Level implements Externalizable {
 		// normalize visibility
 		for (int y = 0; y <= h; y++) {
 			for (int x = 0; x <= w; x++) {
-				int vis = visibility[y][x] / 10;
-				if (vis > 100) {
-					vis = 100;
+				int vis = visibility[y][x];
+				if (vis > visMax) {
+					vis = visMax;
 				}
 				if (vis < 0) {
 					vis = 0;
@@ -282,19 +305,20 @@ public class Level implements Externalizable {
 		screen.clear(Color.get(999));
 		screen.setOffset(xScroll, yScroll);
 		
-		// render blocks of fog (4x4)
+		// render blocks of fog (8x8)
 		for (int y = 0; y <= h; y++) {
 			for (int x = 0; x <= w; x++) {
 				int vis = visibility[y][x];
-				int visBlend = vis;
 				int xr = (xo+x)*16;
 				int yr = (yo+y)*16;
 				for (int z = 0; z < 4; z++) {
-					int zx = (z % 2)-1;
-					int zy = (z / 2)-1;
+					int zx = (z % 2);
+					int zy = (z / 2);
+					int visBlend = vis;
+					// blend levels
 					for (int s = 0; s < 4; s++) {
-						int sx = (s % 2);
-						int sy = (s / 2);
+						int sx = (s % 2)-1;
+						int sy = (s / 2)-1;
 						if (y+sy+zy < 0 || y+sy+zy >= h || x+sx+zx < 0 || x+sx+zx >= w) {
 							visBlend += vis;
 						} else {
@@ -302,7 +326,9 @@ public class Level implements Externalizable {
 						}
 					}
 					visBlend /= 5;
-					int color = visBlend * 2;					
+					// create normal color for overlay
+					int color = (int)visBlend / 6;			
+					// render one 8x8 patch 
 					screen.renderPoint(xr + zx*8, yr + zy*8, 8, color);
 				}
 			}
@@ -403,15 +429,15 @@ public class Level implements Externalizable {
 	public void tick() {
 		trySpawn(1);
 
-		/*if (random.nextInt(100) == 0) {
-			randomFog += random.nextInt(3)-1;
-			if (randomFog < -2) {
-				randomFog = -2;
-			}
-			if (randomFog > 2) {
-				randomFog = 2;
-			}
-		}*/
+		// update fog value
+		if (depth >= 0) {
+			// above ground, day and night cycles
+			Game game = GameContainer.getInstance().getGame();
+			dayFog = (int)(Math.sin(game.getDayCycle() * 2*Math.PI) * MAX_FOG) + MAX_FOG/2;
+		} else {
+			// underground, full darkness
+			dayFog = (int)(MAX_FOG * 3.5);
+		}
 		
 		for (int i = 0; i < w * h / 50; i++) {
 			int xt = random.nextInt(w);

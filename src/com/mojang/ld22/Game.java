@@ -61,9 +61,22 @@ public class Game extends Canvas implements Runnable, Externalizable {
 	private int wonTimer = 0;
 	public boolean hasWon = false;
 
+	public static final int DAY_LENGTH = 20000;
+	
 	public void setMenu(Menu menu) {
 		this.menu = menu;
 		if (menu != null) menu.init(this, input);
+	}
+	
+	/**
+	 * Returns the part of the day.
+	 * 
+	 * @return 0 is midnight, 0.5 is noon, ...
+	 */
+	public double getDayCycle()
+	{
+		int dayTicks = tickCount % DAY_LENGTH;
+		return dayTicks / (double)DAY_LENGTH;
 	}
 
 	public void start() {
@@ -243,10 +256,11 @@ public class Game extends Canvas implements Runnable, Externalizable {
 
 		int xScroll = player.x - screen.w / 2;
 		int yScroll = player.y - (screen.h - 8) / 2;
-		if (xScroll < 16) xScroll = 16;
-		if (yScroll < 16) yScroll = 16;
-		if (xScroll > level.w * 16 - screen.w - 16) xScroll = level.w * 16 - screen.w - 16;
-		if (yScroll > level.h * 16 - screen.h - 16) yScroll = level.h * 16 - screen.h - 16;
+		// we have a nice border, so the player stays in the center!
+		//if (xScroll < 16) xScroll = 16;
+		//if (yScroll < 16) yScroll = 16;
+		//if (xScroll > level.w * 16 - screen.w - 16) xScroll = level.w * 16 - screen.w - 16;
+		//if (yScroll > level.h * 16 - screen.h - 16) yScroll = level.h * 16 - screen.h - 16;
 		
 		if (currentLevel > 3) {
 			int col = Color.get(20, 20, 121, 121);
@@ -262,16 +276,18 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		// render level sprites
 		level.renderSprites(screen, xScroll, yScroll);
 		
+		// prepare light-map
+		lightScreen.clear(0);
+		level.renderLight(lightScreen, xScroll, yScroll);
+		
 		// render fog-of-war
 		fogScreen.clear(0);
-		level.renderFog(fogScreen, xScroll, yScroll);
+		level.renderFog(fogScreen, lightScreen, xScroll, yScroll);
 		screen.overlay(fogScreen, xScroll, yScroll);
 		
 		// render darkness
 		if (currentLevel < 3) {
-			lightScreen.clear(0);
-			level.renderLight(lightScreen, xScroll, yScroll);
-			screen.overlay(lightScreen, xScroll, yScroll);
+			//screen.overlay(lightScreen, xScroll, yScroll);
 		}
 
 		renderGui();

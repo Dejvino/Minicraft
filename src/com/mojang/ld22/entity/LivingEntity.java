@@ -146,6 +146,53 @@ public class LivingEntity extends Entity
 	
 		return false;
 	}
+	
+	/**
+	 * Returns the X position of the tile this entity is facing.
+	 * 
+	 * @return Tile pos X
+	 */
+	public int getFacingTileX()
+	{
+		int xa = 0;
+		if (dir == 2) {
+			xa = -1;
+		}
+		if (dir == 3) {
+			xa = 1;
+		}
+		return (x >> 4) + xa;
+	}
+	
+	/**
+	 * Returns the Y position of the tile this entity is facing.
+	 * 
+	 * @return Tile pos Y
+	 */
+	public int getFacingTileY()
+	{
+		int ya = 0;
+		if (dir == 1) {
+			ya = -1;
+		}
+		if (dir == 0) {
+			ya = 1;
+		}
+		return (y >> 4) + ya;
+	}
+	
+	/**
+	 * Returns the tile that this entity is facing.
+	 * This is based on direction and current position.
+	 * 
+	 * @return Tile
+	 */
+	public Tile getFacingTile()
+	{
+		int xt = this.getFacingTileX();
+		int yt = this.getFacingTileY();
+		return level.getTile(xt, yt);
+	}
 
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,

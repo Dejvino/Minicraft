@@ -12,7 +12,10 @@ import com.mojang.ld22.item.Item;
 import com.mojang.ld22.level.Level;
 import com.mojang.ld22.level.tile.Tile;
 
-public class Entity implements Externalizable {
+public class Entity implements Externalizable
+{
+	private static final long serialVersionUID = -6757626125184439001L;
+	
 	protected final Random random = new Random();
 	public int x, y;
 	public int xr = 6;

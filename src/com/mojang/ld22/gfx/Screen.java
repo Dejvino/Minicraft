@@ -83,6 +83,22 @@ public class Screen implements Serializable {
 		this.xOffset = xOffset;
 		this.yOffset = yOffset;
 	}
+	
+	/**
+	 * Gets pixel color in the given position.
+	 * If the position is not valid, 0 is returned.
+	 * 
+	 * @param x
+	 * @param y
+	 * @return
+	 */
+	public int getPixel(int x, int y)
+	{
+		if (x < 0 || y < 0 || x >= w || y >= h) {
+			return 0;
+		}
+		return pixels[x + y * w];
+	}
 
 	private int[] dither = new int[] { 0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5, };
 

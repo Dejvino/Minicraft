@@ -108,6 +108,6 @@ public class TreeTile extends Tile {
 	}
 	
 	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
-		return 80;
+		return 50;
 	}
 }

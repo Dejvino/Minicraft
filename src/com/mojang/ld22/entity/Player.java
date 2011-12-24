@@ -377,7 +377,7 @@ public class Player extends LivingEntity {
 	}
 
 	public int getLightRadius() {
-		int r = 2;
+		int r = 0;
 		if (activeItem != null) {
 			if (activeItem instanceof FurnitureItem) {
 				int rr = ((FurnitureItem) activeItem).furniture.getLightRadius();

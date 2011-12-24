@@ -59,7 +59,7 @@ public class GrassTile extends Tile {
 		else
 			yn += random.nextInt(2) * 2 - 1;
 
-		if (level.getTile(xn, yn) == Tile.dirt) {
+		if (level.getTile(xn, yn).equals(Tile.dirt)) {
 			level.setTile(xn, yn, this, 0);
 		}
 	}

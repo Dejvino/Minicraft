@@ -434,16 +434,29 @@ public class Level implements Externalizable
 			// above ground, day and night cycles
 			Game game = GameContainer.getInstance().getGame();
 			dayFog = (int)(Math.sin(game.getDayCycle() * 2*Math.PI) * MAX_FOG) + MAX_FOG/2;
+			if (dayFog > 15) {
+				grassColor = 121;
+				dirtColor = 211;
+			} else if (dayFog > 8) {
+				grassColor = 131;
+				dirtColor = 322;
+			} else {
+				grassColor = 141;
+				dirtColor = 322;
+			}
 		} else {
 			// underground, full darkness
 			dayFog = (int)(MAX_FOG * 3.5);
 		}
 		
+		// tick all tiles
 		for (int i = 0; i < w * h / 50; i++) {
 			int xt = random.nextInt(w);
 			int yt = random.nextInt(w);
 			getTile(xt, yt).tick(this, xt, yt);
 		}
+		
+		// tick all entities
 		for (int i = 0; i < entities.size(); i++) {
 			Entity e = entities.get(i);
 			int xto = e.x >> 4;

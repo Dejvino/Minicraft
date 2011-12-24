@@ -9,13 +9,19 @@ import com.mojang.ld22.item.resource.Resource;
 
 public class ResourceRecipe extends Recipe {
 	private Resource resource;
+	private int count;
 
-	public ResourceRecipe(Resource resource) {
-		super(new ResourceItem(resource, 1));
+	public ResourceRecipe(Resource resource, int count) {
+		super(new ResourceItem(resource, count));
 		this.resource = resource;
+		this.count = count;
+	}
+	
+	public ResourceRecipe(Resource resource) {
+		this(resource, 1);
 	}
 
 	public void craft(Player player) {
-		player.inventory.add(0, new ResourceItem(resource, 1));
+		player.inventory.add(0, new ResourceItem(resource, count));
 	}
 }

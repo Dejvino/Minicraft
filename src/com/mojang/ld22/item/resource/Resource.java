@@ -15,7 +15,7 @@ public class Resource implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static Resource wood = new Resource("Wood", 1 + 4 * 32, Color.get(-1, 200, 531, 430));
+	public static Resource wood = new Resource("Wood", 1 + 4 * 32, Color.get(-1, 300, 522, 532));
 	public static Resource stone = new Resource("Stone", 2 + 4 * 32, Color.get(-1, 111, 333, 555));
 	public static Resource flower = new PlantableResource("Flower", 0 + 4 * 32, Color.get(-1, 10, 444, 330), Tile.flower, Tile.grass);
 	public static Resource acorn = new PlantableResource("Acorn", 3 + 4 * 32, Color.get(-1, 100, 531, 320), Tile.treeSapling, Tile.grass);
@@ -39,6 +39,9 @@ public class Resource implements Serializable {
 	public static Resource cloud = new PlantableResource("cloud", 2 + 4 * 32, Color.get(-1, 222, 555, 444), Tile.cloud, Tile.infiniteFall);
 	public static Resource gem = new Resource("gem", 13 + 4 * 32, Color.get(-1, 101, 404, 545));
 
+	public static Resource plank = new Resource("Plank", 1 + 4 * 32, Color.get(-1, 200, 531, 430));
+	public static Resource stoneTile = new Resource("tile", 1 + 4 * 32, Color.get(-1, 222, 555, 444));
+
 	public final String name;
 	public final int sprite;
 	public final int color;
@@ -51,17 +54,32 @@ public class Resource implements Serializable {
 	}
 
 	public boolean interactOn(Tile tile, Level level, int xt, int yt, Player player, int attackDir) {
+		boolean sameTile = (xt == (player.x >> 4)) && (yt == (player.y >> 4));
 		if (this.equals(wood)) {
 			// build wooden wall on dirt and grass
-			if (DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) {
-				level.setTile(xt, yt, WoodenWallTile.woodenWall, 0);
+			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+				level.setTile(xt, yt, Tile.woodenWall, 0);
 				return true;
 			}
 		}
 		if (this.equals(stone)) {
 			// build rock wall on dirt and grass
-			if (DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) {
-				level.setTile(xt, yt, RockWallTile.rockWall, 0);
+			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+				level.setTile(xt, yt, Tile.rockWall, 0);
+				return true;
+			}
+		}
+		if (this.equals(plank)) {
+			// build fence on dirt and grass
+			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+				level.setTile(xt, yt, Tile.fence, 0);
+				return true;
+			}
+		}
+		if (this.equals(stoneTile)) {
+			// build paved road on dirt and grass
+			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+				level.setTile(xt, yt, Tile.rockFloor, 0);
 				return true;
 			}
 		}

@@ -74,17 +74,24 @@ public class LevelGen {
 	public static byte[][] createAndValidateTopMap(int w, int h) {
 		int attempt = 0;
 		do {
+			attempt++;
+			
 			byte[][] result = createTopMap(w, h);
 
+			if (attempt > 100) {
+				// I give up! Take this map and leave!
+				return result;
+			}
+			
 			int[] count = new int[256];
 
 			for (int i = 0; i < w * h; i++) {
 				count[result[0][i] & 0xff]++;
 			}
-			if (count[Tile.rock.id & 0xff] < 100) continue;
-			if (count[Tile.sand.id & 0xff] < 100) continue;
-			if (count[Tile.grass.id & 0xff] < 100) continue;
-			if (count[Tile.tree.id & 0xff] < 100) continue;
+			if (count[Tile.rock.id & 0xff] < h) continue;
+			if (count[Tile.sand.id & 0xff] < h) continue;
+			if (count[Tile.grass.id & 0xff] < h) continue;
+			if (count[Tile.tree.id & 0xff] < h) continue;
 			if (count[Tile.stairsDown.id & 0xff] < 2) continue;
 
 			return result;
@@ -95,8 +102,15 @@ public class LevelGen {
 	public static byte[][] createAndValidateUndergroundMap(int w, int h, int depth) {
 		int attempt = 0;
 		do {
+			attempt++;
+			
 			byte[][] result = createUndergroundMap(w, h, depth);
 
+			if (attempt > 100) {
+				// I give up! Take this map and leave!
+				return result;
+			}
+			
 			int[] count = new int[256];
 
 			for (int i = 0; i < w * h; i++) {
@@ -115,8 +129,15 @@ public class LevelGen {
 	public static byte[][] createAndValidateSkyMap(int w, int h) {
 		int attempt = 0;
 		do {
+			attempt++;
+			
 			byte[][] result = createSkyMap(w, h);
 
+			if (attempt > 100) {
+				// I give up! Take this map and leave!
+				return result;
+			}
+			
 			int[] count = new int[256];
 
 			for (int i = 0; i < w * h; i++) {

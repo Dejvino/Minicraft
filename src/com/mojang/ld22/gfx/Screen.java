@@ -113,6 +113,15 @@ public class Screen implements Serializable {
 
 		}
 	}
+	
+	public void copyRect(Screen screen2, int x2, int y2, int w2, int h2) {
+		int[] oPixels = screen2.pixels;
+		for (int y = 0; y < h2; y++) {
+			for (int x = 0; x < w2; x++) {
+				oPixels[(x+x2) + (y+y2)*screen2.w] = pixels[x + y*this.w];
+			}
+		}
+	}
 
 	public void renderLight(int x, int y, int r) {
 		x -= xOffset;

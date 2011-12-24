@@ -33,7 +33,7 @@ import com.mojang.ld22.screen.WonMenu;
 public class Game extends Canvas implements Runnable, Externalizable {
 	private static final long serialVersionUID = 1L;
 	private Random random = new Random();
-	public static final String NAME = "Minicraft";
+	public static final String NAME = "Alecraft";
 	public static final int HEIGHT = 200;
 	public static final int WIDTH = 300;
 	public static final int SCALE = 3;
@@ -75,7 +75,7 @@ public class Game extends Canvas implements Runnable, Externalizable {
 	 */
 	public double getDayCycle()
 	{
-		int dayTicks = tickCount % DAY_LENGTH;
+		int dayTicks = gameTime % DAY_LENGTH;
 		return dayTicks / (double)DAY_LENGTH;
 	}
 

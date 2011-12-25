@@ -151,13 +151,13 @@ public class Player extends LivingEntity {
 		int xt = x >> 4;
 		int yt = (y + yo) >> 4;
 		int r = 12;
-		if (attackDir == 0) yt = (y + r + yo) >> 4;
-		if (attackDir == 1) yt = (y - r + yo) >> 4;
-		if (attackDir == 2) xt = (x - r) >> 4;
-		if (attackDir == 3) xt = (x + r) >> 4;
+		if (dir == 0) yt = (y + r + yo) >> 4;
+		if (dir == 1) yt = (y - r + yo) >> 4;
+		if (dir == 2) xt = (x - r) >> 4;
+		if (dir == 3) xt = (x + r) >> 4;
 
 		if (xt >= 0 && yt >= 0 && xt < level.w && yt < level.h) {
-			if (level.getTile(xt, yt).use(level, xt, yt, this, attackDir)) return true;
+			if (level.getTile(xt, yt).use(level, xt, yt, this, dir)) return true;
 		}
 
 		return false;

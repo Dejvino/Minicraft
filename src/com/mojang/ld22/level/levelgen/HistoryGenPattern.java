@@ -12,6 +12,8 @@ public class HistoryGenPattern
 	private static final byte A = Tile.farmland.id; // fArmland
 	private static final byte S = Tile.rockWall.id; // Stone
 	private static final byte P = Tile.rockFloor.id; // Paved Path
+	private static final byte R = Tile.door.id; // dooR
+	private static final byte I = Tile.window.id; // wIndow
 	
 	//=========================================================================
 	//		BUILDINGS
@@ -21,25 +23,44 @@ public class HistoryGenPattern
 		{ W, W, W },
 		{ W, D, W }
 	};
-	
 	public static byte[][] hut2 = new byte[][] {
 		{ W, W, W },
 		{ W, D, W },
-		{ W, D, W }
+		{ W, R, W }
 	};
-	
-	public static byte[][] cottage = new byte[][] {
-		{ W, W, W, W, W },
+
+	public static byte[][] cottage1 = new byte[][] {
+		{ W, W, W, W },
+		{ W, D, D, W },
+		{ W, R, I, W }
+	};
+	public static byte[][] cottage2 = new byte[][] {
+		{ W, W, I, W },
+		{ R, D, D, I },
+		{ W, W, I, W }
+	};
+	public static byte[][] cottage3 = new byte[][] {
+		{ W, I, W, I, W },
+		{ R, D, D, D, I },
+		{ W, I, W, I, W }
+	};
+	public static byte[][] cottage4 = new byte[][] {
+		{ W, W, I, W, W },
+		{ I, D, D, D, I },
+		{ W, I, R, I, W }
+	};
+	public static byte[][] cottage5 = new byte[][] {
+		{ W, I, W, I, W },
 		{ W, D, D, D, W },
-		{ W, D, D, D, W },
-		{ W, W, D, W, W }
+		{ I, D, D, D, I },
+		{ W, W, R, W, W }
 	};
 
 	public static byte[][] stoneHouse = new byte[][] {
-		{ S, S, S, S, S },
+		{ S, I, S, I, S },
+		{ I, P, P, P, I },
 		{ S, P, P, P, S },
-		{ S, P, P, P, S },
-		{ S, P, P, P, S },
+		{ I, P, P, P, I },
 		{ S, S, P, S, S }
 	};
 	
@@ -85,11 +106,17 @@ public class HistoryGenPattern
 		{ S, S, S, S, S, S, S, S, S, S, S, S, S },
 	};
 	
-	public static byte[][] stoneWallGate = new byte[][] {
+	public static byte[][] stoneWallGate1 = new byte[][] {
 		{ O, O, O, O, O, P, P, O, O, O, O, O },
 		{ S, S, S, S, S, P, P, S, S, S, S, S },
 		{ S, S, S, S, S, P, P, S, S, S, S, S },
 		{ O, O, O, O, O, P, P, O, O, O, O, O },
+	};
+	public static byte[][] stoneWallGate2 = new byte[][] {
+		{ O, O, O, O, S, S, S, P, P, S, S, S, O, O, O, O },
+		{ S, S, S, S, S, P, I, P, P, R, P, S, S, S, S, S },
+		{ S, S, S, S, S, P, R, P, P, I, P, S, S, S, S, S },
+		{ O, O, O, O, S, S, S, P, P, S, S, S, O, O, O, O },
 	};
 	
 	public static byte[][] stoneWallCorner1 = new byte[][] {
@@ -168,17 +195,17 @@ public class HistoryGenPattern
 	//=========================================================================
 		
 	public static byte[][][] buildings = new byte[][][] {
-		hut1, hut2, cottage,
+		hut1, hut2, cottage1, cottage2, cottage3, cottage4, cottage5,
 		stoneHouse,
 		woodenWall1, woodenWall2, woodenWall3, woodenWallCorner1, woodenWallCorner2,
 		stoneWall1, stoneWall2, stoneWall3, stoneWallCorner1, stoneWallCorner2,
-		stoneWallGate,
+		stoneWallGate1, stoneWallGate2,
 		ruin1, ruin2, ruin3,
 		farm1, farm2, farm3, farm4
 	};
 	
 	public static byte[][][] sceneryForest = new byte[][][] {
-		hut1, hut2, cottage,
+		hut1, hut2, cottage1, cottage2, cottage3, cottage4, cottage5,
 		stoneHouse,
 		woodenWall1, woodenWall2, woodenWall3, woodenWallCorner1, woodenWallCorner2,
 		ruin1, ruin2, ruin3,

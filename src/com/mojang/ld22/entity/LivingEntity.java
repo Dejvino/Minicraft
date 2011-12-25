@@ -12,6 +12,10 @@ import com.mojang.ld22.sound.Sound;
 
 public class LivingEntity extends Entity
 {
+	private static final long serialVersionUID = 923792273628L;
+
+	protected static final int HEARING_DISTANCE = 2 * 8 * 16;
+	
 	protected int walkDist = 0;
 	protected int dir = 0;
 	public int hurtTime = 0;
@@ -22,6 +26,7 @@ public class LivingEntity extends Entity
 	public int swimTimer = 0;
 	public int tickTime = 0;
 	protected int lvl;
+	public int karma = 0;
 
 	public LivingEntity()
 	{
@@ -91,6 +96,12 @@ public class LivingEntity extends Entity
 
 	public void hurt(Entity ent, int damage, int attackDir) {
 		doHurt(damage, attackDir);
+		// change attackers karma
+		if (ent instanceof LivingEntity) {
+			LivingEntity livingEnt = (LivingEntity)ent;
+			int minKarma = this.karma > 0 ? 1 : (this.karma < 0 ? -1 : 0);
+			livingEnt.karma -= (this.karma * damage / 1000 ) + minKarma;
+		}
 	}
 	
 	public void heal(int heal)
@@ -192,6 +203,34 @@ public class LivingEntity extends Entity
 		int xt = this.getFacingTileX();
 		int yt = this.getFacingTileY();
 		return level.getTile(xt, yt);
+	}
+	
+	/**
+	 * Returns entity's karma:
+	 *  > 0 is good
+	 *  0 is neutral
+	 *  < 0 evil
+	 *  
+	 * @return
+	 */
+	public int getKarma()
+	{
+		return this.karma;
+	}
+	
+	public boolean isGood()
+	{
+		return this.karma > 100;
+	}
+	
+	public boolean isEvil()
+	{
+		return this.karma < -100;
+	}
+	
+	public boolean isNeutral()
+	{
+		return !isGood() && !isEvil();
 	}
 
 	@Override

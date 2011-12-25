@@ -34,16 +34,20 @@ public class RockTile extends Tile {
 		boolean dr = level.getTile(x + 1, y + 1) != this;
 
 		// attach to door
-		if (level.getTile(x, y - 1).equals(Tile.door)) {
+		if (level.getTile(x, y - 1).equals(Tile.door)
+				|| level.getTile(x, y - 1).equals(Tile.window)) {
 			u = false;
 		}
-		if (level.getTile(x, y + 1).equals(Tile.door)) {
+		if (level.getTile(x, y + 1).equals(Tile.door)
+				|| level.getTile(x, y + 1).equals(Tile.window)) {
 			d = false;
 		}
-		if (level.getTile(x - 1, y).equals(Tile.door)) {
+		if (level.getTile(x - 1, y).equals(Tile.door)
+				|| level.getTile(x - 1, y).equals(Tile.window)) {
 			l = false;
 		}
-		if (level.getTile(x + 1, y).equals(Tile.door)) {
+		if (level.getTile(x + 1, y).equals(Tile.door)
+				|| level.getTile(x + 1, y).equals(Tile.window)) {
 			r = false;
 		}
 		

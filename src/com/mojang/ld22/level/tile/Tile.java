@@ -47,6 +47,7 @@ public class Tile implements Serializable {
 	public static Tile fence = new FenceTile(102);
 	public static Tile rockFloor = new RockFloorTile(103);
 	public static Tile door = new DoorTile(104, dirt);
+	public static Tile window = new WindowTile(105, dirt);
 
 	public final byte id;
 

@@ -14,6 +14,7 @@ public class Zombie extends Mob {
 	}
 	
 	public Zombie(int lvl) {
+		this.karma = lvl * (-10);
 		this.lvl = lvl;
 		x = random.nextInt(64 * 16);
 		y = random.nextInt(64 * 16);
@@ -102,5 +103,4 @@ public class Zombie extends Mob {
 		}
 
 	}
-
 }

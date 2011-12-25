@@ -8,6 +8,7 @@ import com.mojang.ld22.level.tile.DirtTile;
 import com.mojang.ld22.level.tile.GrassTile;
 import com.mojang.ld22.level.tile.Tile;
 import com.mojang.ld22.level.tile.WoodenWallTile;
+import com.mojang.ld22.sound.Sound;
 
 /**
  * Simple lonely NPC.
@@ -82,6 +83,9 @@ public class Wanderer extends Npc
 				for (int i = 0; i < count; i++) {
 					level.add(new ItemEntity(new ResourceItem(Resource.wood), xt * 16 + random.nextInt(10) + 3, yt * 16 + random.nextInt(10) + 3));
 				}
+				if (level.player != null && this.distanceFrom(level.player) < HEARING_DISTANCE) {
+					Sound.craft.play();
+				}
 				idleTime = 0;
 			}
 		}
@@ -96,6 +100,9 @@ public class Wanderer extends Npc
 				int count = random.nextInt(2);
 				for (int i = 0; i < count; i++) {
 					level.add(new ItemEntity(new ResourceItem(Resource.wood), x * 16 + random.nextInt(10) + 3, y * 16 + random.nextInt(10) + 3));
+				}
+				if (level.player != null && this.distanceFrom(level.player) < HEARING_DISTANCE) {
+					Sound.craft.play();
 				}
 				idleTime = 0;
 			}

@@ -15,6 +15,9 @@ import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 
 public class OreTile extends Tile {
+	
+	private static final long serialVersionUID = -8602494288152490031L;
+	
 	private Resource toDrop;
 	private int color;
 

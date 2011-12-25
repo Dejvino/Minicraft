@@ -165,4 +165,18 @@ public class Entity implements Externalizable
 		out.writeInt(this.yr);
 		// ignoring this.level, entity is loaded by Level
 	}
+
+	/**
+	 * Returns a Manhattan distance from the given entity.
+	 * 
+	 * @param entity
+	 * @return
+	 */
+	protected int distanceFrom(Entity entity)
+	{
+		if (entity == null) {
+			return -1;
+		}
+		return Math.abs(this.x - entity.x) + Math.abs(this.y - entity.y);
+	}
 }

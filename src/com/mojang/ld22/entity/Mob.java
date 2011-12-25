@@ -8,6 +8,7 @@ import java.io.ObjectOutput;
 public class Mob extends LivingEntity {
 	
 	public Mob() {
+		karma = -100;
 		x = y = 8;
 		xr = 4;
 		yr = 3;

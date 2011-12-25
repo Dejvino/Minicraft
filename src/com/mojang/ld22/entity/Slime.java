@@ -13,6 +13,7 @@ public class Slime extends Mob {
 	}
 	
 	public Slime(int lvl) {
+		this.karma = lvl * (-8);
 		this.lvl = lvl;
 		x = random.nextInt(64 * 16);
 		y = random.nextInt(64 * 16);

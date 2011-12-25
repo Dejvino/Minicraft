@@ -7,6 +7,7 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -43,7 +44,7 @@ public class Level implements Externalizable
 	public int monsterDensity = 8;
 
 	private int dayFog = 0;
-	public static final int MAX_FOG = 20;
+	public static final int MAX_FOG = 40;
 	
 	public List<Entity> entities = new ArrayList<Entity>();
 	private Comparator<Entity> spriteSorter = new Comparator<Entity>() {
@@ -425,29 +426,70 @@ public class Level implements Externalizable
 			}
 		}
 	}
+	
+	public void tryDespawn(int count) {
+		for (int i = 0; i < count; i++) {
+			int x = random.nextInt(this.w);
+			int y = random.nextInt(this.h);
+			int xx = x * 16 + 8;
+			int yy = y * 16 + 8;
+		
+			// check distance from player
+			if (this.player != null) {
+				int xd = this.player.x - xx;
+				int yd = this.player.y - yy;
+				if (xd * xd + yd * yd < 80 * 80) {
+					continue;
+				}
+			}
+		
+			// kill redundant monsters
+			int r = this.monsterDensity * 16;
+			int remaining = 1;
+			List<Entity> entities = getEntities(xx - r, yy - r, xx + r, yy + r);
+			for (Entity ent : entities) {
+				if (ent instanceof LivingEntity) {
+					LivingEntity entity = (LivingEntity)ent;
+					if (entity.isEvil()) {
+						if (remaining <= 0) {
+							entity.remove();
+						} else {
+							remaining--;
+						}
+					}
+				}
+			}
+		}
+	}
 
 	public void tick() {
-		trySpawn(1);
+		trySpawn(5);
+		tryDespawn(5);
 
 		// update fog value
 		if (depth >= 0) {
 			// above ground, day and night cycles
 			Game game = GameContainer.getInstance().getGame();
-			dayFog = (int)(Math.cos(game.getDayCycle() * 2*Math.PI) * MAX_FOG) + MAX_FOG/2;
+			dayFog = (int)((Math.cos(game.getDayCycle() * 2*Math.PI) * MAX_FOG) + MAX_FOG) / 2;
 			if (dayFog > 15) {
 				grassColor = 121;
 				dirtColor = 211;
+				sandColor = 330;
 			} else if (dayFog > 8) {
 				grassColor = 131;
 				dirtColor = 322;
+				sandColor = 440;
 			} else {
 				grassColor = 141;
 				dirtColor = 322;
+				sandColor = 550;
 			}
 		} else {
 			// underground, full darkness
 			dayFog = (int)(MAX_FOG * 3.5);
 		}
+		// update monsters density based on darkness
+		monsterDensity = 6 * MAX_FOG / (dayFog+1);
 		
 		// tick all tiles
 		for (int i = 0; i < w * h / 50; i++) {

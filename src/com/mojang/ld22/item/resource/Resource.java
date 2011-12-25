@@ -6,6 +6,7 @@ import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.level.Level;
 import com.mojang.ld22.level.tile.DirtTile;
+import com.mojang.ld22.level.tile.DoorTile;
 import com.mojang.ld22.level.tile.GrassTile;
 import com.mojang.ld22.level.tile.RockWallTile;
 import com.mojang.ld22.level.tile.Tile;
@@ -41,6 +42,7 @@ public class Resource implements Serializable {
 
 	public static Resource plank = new Resource("Plank", 1 + 4 * 32, Color.get(-1, 200, 531, 430));
 	public static Resource stoneTile = new Resource("tile", 1 + 4 * 32, Color.get(-1, 222, 555, 444));
+	public static Resource door = new Resource("door", 6 + 10 * 32, Color.get(-1, 300, 522, 532));
 
 	public final String name;
 	public final int sprite;
@@ -57,30 +59,49 @@ public class Resource implements Serializable {
 		boolean sameTile = (xt == (player.x >> 4)) && (yt == (player.y >> 4));
 		if (this.equals(wood)) {
 			// build wooden wall on dirt and grass
-			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+			if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)) && !sameTile) {
 				level.setTile(xt, yt, Tile.woodenWall, 0);
 				return true;
 			}
 		}
 		if (this.equals(stone)) {
 			// build rock wall on dirt and grass
-			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+			if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)) && !sameTile) {
 				level.setTile(xt, yt, Tile.rockWall, 0);
 				return true;
 			}
 		}
 		if (this.equals(plank)) {
 			// build fence on dirt and grass
-			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+			if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)) && !sameTile) {
 				level.setTile(xt, yt, Tile.fence, 0);
 				return true;
 			}
 		}
 		if (this.equals(stoneTile)) {
 			// build paved road on dirt and grass
-			if ((DirtTile.dirt.equals(tile) || GrassTile.grass.equals(tile)) && !sameTile) {
+			if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)) && !sameTile) {
 				level.setTile(xt, yt, Tile.rockFloor, 0);
 				return true;
+			}
+		}
+		if (this.equals(door)) {
+			// check for a frame
+			Tile tl = level.getTile(xt-1, yt);
+			Tile tr = level.getTile(xt+1, yt);
+			Tile tu = level.getTile(xt, yt-1);
+			Tile td = level.getTile(xt, yt+1);
+			boolean l = xt > 0 && (tl.equals(Tile.rockWall) || tl.equals(Tile.woodenWall) || tl.equals(Tile.rock));
+			boolean r = xt < level.w && (tr.equals(Tile.rockWall) || tr.equals(Tile.woodenWall) || tr.equals(Tile.rock));
+			boolean u = yt > 0 && (tu.equals(Tile.rockWall) || tu.equals(Tile.woodenWall) || tu.equals(Tile.rock));
+			boolean d = yt < level.h && (td.equals(Tile.rockWall) || td.equals(Tile.woodenWall) || td.equals(Tile.rock));
+			System.out.println("l " + l + " r " + r + " u " + u + " d " + d);
+			if (l&&r || u&&d) {
+				// build door on dirt and grass
+				if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)) && !sameTile) {
+					level.setTile(xt, yt, Tile.door, 0);
+					return true;
+				}
 			}
 		}
 		return false;

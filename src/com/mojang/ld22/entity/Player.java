@@ -169,8 +169,9 @@ public class Player extends LivingEntity {
 		attackItem = activeItem;
 		boolean done = false;
 
-		if (activeItem != null) {
-			attackTime = 10;
+		// try to interact first
+		{
+			attackTime = activeItem == null ? 5 : 10;
 			int yo = -2;
 			int range = 12;
 			if (dir == 0 && interact(x - 8, y + 4 + yo, x + 8, y + range + yo)) done = true;
@@ -178,7 +179,7 @@ public class Player extends LivingEntity {
 			if (dir == 3 && interact(x + 4, y - 8 + yo, x + range, y + 8 + yo)) done = true;
 			if (dir == 2 && interact(x - range, y - 8 + yo, x - 4, y + 8 + yo)) done = true;
 			if (done) return;
-
+	
 			int xt = x >> 4;
 			int yt = (y + yo) >> 4;
 			int r = 12;
@@ -186,16 +187,14 @@ public class Player extends LivingEntity {
 			if (attackDir == 1) yt = (y - r + yo) >> 4;
 			if (attackDir == 2) xt = (x - r) >> 4;
 			if (attackDir == 3) xt = (x + r) >> 4;
-
+	
 			if (xt >= 0 && yt >= 0 && xt < level.w && yt < level.h) {
-				if (activeItem.interactOn(level.getTile(xt, yt), level, xt, yt, this, attackDir)) {
+				if (activeItem != null && activeItem.interactOn(level.getTile(xt, yt), level, xt, yt, this, attackDir)) {
 					done = true;
-				} else {
-					if (level.getTile(xt, yt).interact(level, xt, yt, this, activeItem, attackDir)) {
-						done = true;
-					}
+				} else if (level.getTile(xt, yt).interact(level, xt, yt, this, activeItem, attackDir)) {
+					done = true;
 				}
-				if (activeItem.isDepleted()) {
+				if (activeItem != null && activeItem.isDepleted()) {
 					activeItem = null;
 				}
 			}
@@ -203,6 +202,7 @@ public class Player extends LivingEntity {
 
 		if (done) return;
 
+		// attack if interaction failed
 		if (activeItem == null || activeItem.canAttack()) {
 			attackTime = 5;
 			int yo = -2;
@@ -263,7 +263,7 @@ public class Player extends LivingEntity {
 
 	public void render(Screen screen) {
 		int xt = 0;
-		int yt = 14;
+		int yt = 20;
 
 		int flip1 = (walkDist >> 3) & 1;
 		int flip2 = (walkDist >> 3) & 1;

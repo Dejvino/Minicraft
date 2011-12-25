@@ -129,7 +129,10 @@ public class Entity implements Externalizable
 	}
 
 	public boolean interact(Player player, Item item, int attackDir) {
-		return item.interact(player, this, attackDir);
+		if (item != null) {
+			return item.interact(player, this, attackDir);
+		}
+		return false;
 	}
 
 	public boolean use(Player player, int attackDir) {

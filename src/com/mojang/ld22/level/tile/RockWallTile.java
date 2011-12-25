@@ -15,8 +15,12 @@ import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 
 public class RockWallTile extends Tile {
+	
+	private static final long serialVersionUID = -4650700204952555472L;
+
 	public RockWallTile(int id) {
 		super(id);
+		this.connectsToPavement = true;
 	}
 
 	public void render(Screen screen, Level level, int x, int y) {

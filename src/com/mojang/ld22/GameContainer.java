@@ -13,6 +13,8 @@ import java.io.ObjectOutputStream;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 
+import com.mojang.ld22.screen.TitleMenu;
+
 /**
  * 		Game Container
  * 
@@ -38,7 +40,8 @@ public class GameContainer
 	private GameContainer()
 	{
 		this.game = new Game();
-		this.game.init();
+		this.game.initGraphics();
+		this.game.setMenu(new TitleMenu());
 	}
 	
 	/**

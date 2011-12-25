@@ -15,6 +15,7 @@ import com.mojang.ld22.sound.Sound;
 public class RockFloorTile extends Tile {
 	public RockFloorTile(int id) {
 		super(id);
+		this.connectsToPavement = true;
 	}
 
 	public void render(Screen screen, Level level, int x, int y) {
@@ -22,10 +23,10 @@ public class RockFloorTile extends Tile {
 		int col = Color.get(baseCol, baseCol, baseCol + 111, baseCol + 111);
 		int transitionColor = Color.get(baseCol - 111, baseCol, baseCol + 111, level.dirtColor);
 
-		boolean u = !level.getTile(x, y - 1).equals(Tile.rockFloor);
-		boolean d = !level.getTile(x, y + 1).equals(Tile.rockFloor);
-		boolean l = !level.getTile(x - 1, y).equals(Tile.rockFloor);
-		boolean r = !level.getTile(x + 1, y).equals(Tile.rockFloor);
+		boolean u = !level.getTile(x, y - 1).connectsToPavement;
+		boolean d = !level.getTile(x, y + 1).connectsToPavement;
+		boolean l = !level.getTile(x - 1, y).connectsToPavement;
+		boolean r = !level.getTile(x + 1, y).connectsToPavement;
 
 		if (!u && !l) {
 			screen.render(x * 16 + 0, y * 16 + 0, 24, col, 0);

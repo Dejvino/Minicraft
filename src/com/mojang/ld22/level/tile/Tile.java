@@ -12,7 +12,7 @@ import com.mojang.ld22.level.Level;
 
 public class Tile implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 2L;
 	
 	public static int tickCount = 0;
 	protected Random random = new Random();
@@ -53,6 +53,7 @@ public class Tile implements Serializable {
 	public boolean connectsToSand = false;
 	public boolean connectsToLava = false;
 	public boolean connectsToWater = false;
+	public boolean connectsToPavement = false;
 
 	public Tile(int id) {
 		this.id = (byte) id;

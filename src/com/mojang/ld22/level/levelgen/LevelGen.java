@@ -74,15 +74,12 @@ public class LevelGen {
 	public static byte[][] createAndValidateTopMap(int w, int h) {
 		int attempt = 0;
 		do {
-			attempt++;
-			
+			// generate natural world
 			byte[][] result = createTopMap(w, h);
 
-			if (attempt > 100) {
-				// I give up! Take this map and leave!
-				return result;
-			}
+			attempt++;
 			
+			// check basic land properties
 			int[] count = new int[256];
 
 			for (int i = 0; i < w * h; i++) {
@@ -94,8 +91,35 @@ public class LevelGen {
 			if (count[Tile.tree.id & 0xff] < h) continue;
 			if (count[Tile.stairsDown.id & 0xff] < 2) continue;
 
-			return result;
-
+			int attemptHistory = 0;
+			do {
+				// add human influence
+				byte[][] humans = HistoryGen.addHistoryToMap(result, w, h);
+				
+				attemptHistory++;
+				if (attemptHistory > 5) {
+					if (attempt > 100) {
+						// I give up! Take this map and leave!
+						return result;
+					}
+					// lets try another world
+					break;
+				}
+				
+				// check human land properties
+				count = new int[256];
+	
+				for (int i = 0; i < w * h; i++) {
+					count[humans[0][i] & 0xff]++;
+				}
+				if (count[Tile.woodenWall.id & 0xff] < 40) continue;
+				if (count[Tile.rockWall.id & 0xff] < 20) continue;
+				if (count[Tile.rockFloor.id & 0xff] < 10) continue;
+				if (count[Tile.fence.id & 0xff] < 10) continue;
+				if (count[Tile.farmland.id & 0xff] < 5) continue;
+				
+				return humans;
+			} while (true);
 		} while (true);
 	}
 
@@ -421,7 +445,7 @@ public class LevelGen {
 
 		return new byte[][] { map, data };
 	}
-
+	
 	public static void main(String[] args) {
 		int d = 0;
 		while (true) {
@@ -441,8 +465,13 @@ public class LevelGen {
 					if (map[i] == Tile.water.id) pixels[i] = 0x000080;
 					if (map[i] == Tile.grass.id) pixels[i] = 0x208020;
 					if (map[i] == Tile.rock.id) pixels[i] = 0xa0a0a0;
+					if (map[i] == Tile.rockWall.id) pixels[i] = 0xa0a0a0;
+					if (map[i] == Tile.rockFloor.id) pixels[i] = 0x909090;
+					if (map[i] == Tile.woodenWall.id) pixels[i] = 0x402020;
+					if (map[i] == Tile.fence.id) pixels[i] = 0x403020;
 					if (map[i] == Tile.dirt.id) pixels[i] = 0x604040;
 					if (map[i] == Tile.sand.id) pixels[i] = 0xa0a040;
+					if (map[i] == Tile.farmland.id) pixels[i] = 0x808030;
 					if (map[i] == Tile.tree.id) pixels[i] = 0x003000;
 					if (map[i] == Tile.lava.id) pixels[i] = 0xff2020;
 					if (map[i] == Tile.cloud.id) pixels[i] = 0xa0a0a0;

@@ -75,7 +75,8 @@ public class Game extends Canvas implements Runnable, Externalizable {
 	 */
 	public double getDayCycle()
 	{
-		int dayTicks = gameTime % DAY_LENGTH;
+		// the game time is shifted by a few hours so we start in the morning
+		int dayTicks = (gameTime + DAY_LENGTH / 4) % DAY_LENGTH;
 		return dayTicks / (double)DAY_LENGTH;
 	}
 
@@ -208,27 +209,30 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		if (!hasFocus()) {
 			input.releaseAll();
 		} else {
-			if (!player.removed && !hasWon) gameTime++;
-
 			input.tick();
 			if (menu != null) {
 				menu.tick();
 			} else {
-				if (player.removed) {
-					playerDeadTime++;
-					if (playerDeadTime > 60) {
-						setMenu(new DeadMenu());
+				if (gameTime > 0) {
+					if (player.removed) {
+						playerDeadTime++;
+						if (playerDeadTime > 60) {
+							setMenu(new DeadMenu());
+						}
+					} else {
+						if (pendingLevelChange != 0) {
+							setMenu(new LevelTransitionMenu(pendingLevelChange));
+							pendingLevelChange = 0;
+						}
 					}
+					if (wonTimer > 0) {
+						if (--wonTimer == 0) {
+							setMenu(new WonMenu());
+						}
+					}
+					if (!player.removed && !hasWon) gameTime++;
 				} else {
-					if (pendingLevelChange != 0) {
-						setMenu(new LevelTransitionMenu(pendingLevelChange));
-						pendingLevelChange = 0;
-					}
-				}
-				if (wonTimer > 0) {
-					if (--wonTimer == 0) {
-						setMenu(new WonMenu());
-					}
+					gameTime++;
 				}
 				level.tick();
 				Tile.tickCount++;
@@ -254,6 +258,37 @@ public class Game extends Canvas implements Runnable, Externalizable {
 			return;
 		}
 
+		renderView();
+
+		renderGui();
+
+		if (!hasFocus()) renderFocusNagger();
+
+		for (int y = 0; y < screen.h; y++) {
+			for (int x = 0; x < screen.w; x++) {
+				int cc = screen.pixels[x + y * screen.w];
+				if (cc < 255) pixels[x + y * WIDTH] = colors[cc];
+			}
+		}
+
+		Graphics g = bs.getDrawGraphics();
+		g.fillRect(0, 0, getWidth(), getHeight());
+
+		int ww = WIDTH * 3;
+		int hh = HEIGHT * 3;
+		int xo = (getWidth() - ww) / 2;
+		int yo = (getHeight() - hh) / 2;
+		g.drawImage(image, xo, yo, ww, hh, null);
+		g.dispose();
+		bs.show();
+	}
+	
+	private void renderView()
+	{
+		if (this.gameTime <= 0) {
+			return;
+		}
+		
 		int xScroll = player.x - screen.w / 2;
 		int yScroll = player.y - (screen.h - 8) / 2;
 		// we have a nice border, so the player stays in the center!
@@ -289,57 +324,37 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		if (currentLevel < 3) {
 			//screen.overlay(lightScreen, xScroll, yScroll);
 		}
-
-		renderGui();
-
-		if (!hasFocus()) renderFocusNagger();
-
-		for (int y = 0; y < screen.h; y++) {
-			for (int x = 0; x < screen.w; x++) {
-				int cc = screen.pixels[x + y * screen.w];
-				if (cc < 255) pixels[x + y * WIDTH] = colors[cc];
-			}
-		}
-
-		Graphics g = bs.getDrawGraphics();
-		g.fillRect(0, 0, getWidth(), getHeight());
-
-		int ww = WIDTH * 3;
-		int hh = HEIGHT * 3;
-		int xo = (getWidth() - ww) / 2;
-		int yo = (getHeight() - hh) / 2;
-		g.drawImage(image, xo, yo, ww, hh, null);
-		g.dispose();
-		bs.show();
 	}
 
 	private void renderGui() {
-		for (int y = 0; y < 2; y++) {
-			for (int x = 0; x < 20; x++) {
-				screen.render(x * 8, screen.h - 16 + y * 8, 0 + 12 * 32, Color.get(000, 000, 000, 000), 0);
+		if (this.gameTime > 0) {
+			for (int y = 0; y < 2; y++) {
+				for (int x = 0; x < 20; x++) {
+					screen.render(x * 8, screen.h - 16 + y * 8, 0 + 12 * 32, Color.get(000, 000, 000, 000), 0);
+				}
 			}
-		}
-
-		for (int i = 0; i < 10; i++) {
-			if (i < player.health)
-				screen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(000, 200, 500, 533), 0);
-			else
-				screen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(000, 100, 000, 000), 0);
-
-			if (player.staminaRechargeDelay > 0) {
-				if (player.staminaRechargeDelay / 4 % 2 == 0)
-					screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 555, 000, 000), 0);
+	
+			for (int i = 0; i < 10; i++) {
+				if (i < player.health)
+					screen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(000, 200, 500, 533), 0);
 				else
-					screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 110, 000, 000), 0);
-			} else {
-				if (i < player.stamina)
-					screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 220, 550, 553), 0);
-				else
-					screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 110, 000, 000), 0);
+					screen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(000, 100, 000, 000), 0);
+	
+				if (player.staminaRechargeDelay > 0) {
+					if (player.staminaRechargeDelay / 4 % 2 == 0)
+						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 555, 000, 000), 0);
+					else
+						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 110, 000, 000), 0);
+				} else {
+					if (i < player.stamina)
+						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 220, 550, 553), 0);
+					else
+						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 110, 000, 000), 0);
+				}
 			}
-		}
-		if (player.activeItem != null) {
-			player.activeItem.renderInventory(screen, 10 * 8, screen.h - 16);
+			if (player.activeItem != null) {
+				player.activeItem.renderInventory(screen, 10 * 8, screen.h - 16);
+			}
 		}
 
 		if (menu != null) {

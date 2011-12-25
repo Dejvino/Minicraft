@@ -433,7 +433,7 @@ public class Level implements Externalizable
 		if (depth >= 0) {
 			// above ground, day and night cycles
 			Game game = GameContainer.getInstance().getGame();
-			dayFog = (int)(Math.sin(game.getDayCycle() * 2*Math.PI) * MAX_FOG) + MAX_FOG/2;
+			dayFog = (int)(Math.cos(game.getDayCycle() * 2*Math.PI) * MAX_FOG) + MAX_FOG/2;
 			if (dayFog > 15) {
 				grassColor = 121;
 				dirtColor = 211;

@@ -3,6 +3,7 @@ package com.mojang.ld22.screen;
 import java.awt.Graphics;
 import java.awt.image.BufferStrategy;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.imageio.ImageIO;
 
@@ -23,14 +24,27 @@ public class AboutMenu extends Menu {
 	private Screen miniScreen;
 	private int tickCount;
 	
+	private AtomicBoolean miniLoaded;
+	
 	public AboutMenu(Menu parent) {
 		this.parent = parent;
-		this.miniGame = new Level(64, 64, 0, null);
-		this.miniGame.trySpawn(10000);
-		// simulate some history
-		for (int i = 0; i < 1000; i++) {
-			miniGame.tick();
-		}
+		
+		// generate a game in the background
+		miniLoaded = new AtomicBoolean();
+		miniLoaded.set(false);
+		Thread thread = new Thread() {
+			public void run() {
+				miniGame = new Level(64, 64, 0, null);
+				miniGame.trySpawn(10000);
+				// simulate some history
+				for (int i = 0; i < 1000; i++) {
+					miniGame.tick();
+				}
+				miniLoaded.set(true);
+			};
+		};
+		thread.start();
+		
 		try {
 			miniScreen = new Screen(MINIGAME_WIDTH * 16, MINIGAME_HEIGHT * 16, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
 		} catch (IOException e) {
@@ -43,27 +57,37 @@ public class AboutMenu extends Menu {
 		if (input.attack.clicked || input.menu.clicked) {
 			game.setMenu(parent);
 		}
-		miniGame.tick();
-		Tile.tickCount++;
+		if (miniLoaded.get()) {
+			miniGame.tick();
+			Tile.tickCount++;
+		}
 	}
 
 	public void render(Screen screen) {
 		screen.clear(0);
 
-		int marginX = (screen.w - 160) / 2;
-		Font.draw("About Alecraft", screen, 	marginX +  2 * 8 + 4, 1 * 8, Color.get(0, 555, 555, 555));
-		Font.draw("Originally Minicraft", screen, 	marginX +  0 * 8 + 4, 3 * 8, Color.get(0, 333, 333, 333));
-		Font.draw("by Markus Persson", screen, 	marginX +  0 * 8 + 4, 4 * 8, Color.get(0, 333, 333, 333));
-		Font.draw("For the 22'nd ludum", screen, 	marginX +  0 * 8 + 4, 5 * 8, Color.get(0, 333, 333, 333));
-		Font.draw("dare competition in", screen, 	marginX +  0 * 8 + 4, 6 * 8, Color.get(0, 333, 333, 333));
-		Font.draw("december 2011.", screen, 	marginX +  0 * 8 + 4, 7 * 8, Color.get(0, 333, 333, 333));
-		Font.draw("Modded and enhanced", screen, 	marginX +  0 * 8 + 4, 10 * 8, Color.get(0, 333, 333, 333));
-		Font.draw("by David Nemecek.", screen, 	marginX +  0 * 8 + 4, 11 * 8, Color.get(0, 333, 333, 333));
+		int marginX = 10;
+		Font.draw("About Alecraft", screen, 	marginX + 4 * 8 + 4, 1 * 8, Color.get(0, 555, 555, 555));
+		Font.drawFitted("Based on code of Minicraft by\n" +
+				" Markus \"Notch\" Persson, 2011.\n\n" +
+				"Modded and enhanced by\n David \"Dejvino\" Nemecek, 2011-2012",
+			screen,
+			marginX +  0 * 8 + 4, 3 * 8,
+			screen.w - 2*marginX, screen.h - 100,
+			Color.get(0, 333, 333, 333));
 		
-		int xScroll = (int)(Math.cos((tickCount / 10000.0) * 2*Math.PI) * (miniGame.w * 8) / 2) + (miniGame.w * 8) / 2 + MINIGAME_WIDTH * 16 / 2;
-		int yScroll = (int)(Math.sin((tickCount / 10000.0) * 2*Math.PI) * (miniGame.h * 8) / 2) + (miniGame.h * 8) / 2 + MINIGAME_HEIGHT * 16 / 2;
-		miniGame.renderBackground(miniScreen, xScroll, yScroll);
-		miniGame.renderSprites(miniScreen, xScroll, yScroll);
-		miniScreen.copyRect(screen, 5, Game.HEIGHT - MINIGAME_HEIGHT*16 - 5, MINIGAME_WIDTH * 16, MINIGAME_HEIGHT * 16);
+		if (miniLoaded.get()) {
+			int xScroll = (int)(Math.cos((tickCount / 10000.0) * 2*Math.PI) * (miniGame.w * 8) / 2) + (miniGame.w * 8) / 2 + MINIGAME_WIDTH * 16 / 2;
+			int yScroll = (int)(Math.sin((tickCount / 10000.0) * 2*Math.PI) * (miniGame.h * 8) / 2) + (miniGame.h * 8) / 2 + MINIGAME_HEIGHT * 16 / 2;
+			miniGame.renderBackground(miniScreen, xScroll, yScroll);
+			miniGame.renderSprites(miniScreen, xScroll, yScroll);
+			miniScreen.copyRect(screen, 5, Game.HEIGHT - MINIGAME_HEIGHT*16 - 5, MINIGAME_WIDTH * 16, MINIGAME_HEIGHT * 16);
+		} else {
+			String dots = "";
+			for (int i = 0; i < tickCount/40 % 4; i++) {
+				dots += ".";
+			}
+			Font.draw("generating world"+dots, screen, 	marginX +  0 * 8 + 4, 19 * 8, Color.get(0, 522, 522, 522));
+		}
 	}
 }

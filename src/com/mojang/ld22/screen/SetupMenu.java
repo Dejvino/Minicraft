@@ -56,6 +56,7 @@ public class SetupMenu extends Menu {
 
 		int marginX = 10;
 		Font.draw("Setup game", screen, marginX + 4 * 8 + 4, 1 * 8, Color.get(0, 555, 555, 555));
+		Font.draw("C change, X back", screen, 1, screen.h - 8, Color.get(0, 222, 222, 222));
 
 		int yo = 30;
 		int checkboxColorTrue = Color.get(121, 0, 353, 454);

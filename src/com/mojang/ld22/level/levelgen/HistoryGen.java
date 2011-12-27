@@ -71,13 +71,13 @@ public class HistoryGen
 		int places;
 		
 		// generate houses on plains (cities / villages)
-		places = rand.nextInt(1000) + 2;
+		places = rand.nextInt(200) + 2;
 		for (int i = 0; i < places; i++) {
-			addRandomSceneryItem(map, HistoryGenPattern.buildings, 1, plainsIds, 0.9);
+			addRandomSceneryItem(map, HistoryGenPattern.buildings, 2, plainsIds, 0.95);
 		}
 		
 		// generate forest scenery
-		places = rand.nextInt(100);
+		places = rand.nextInt(50);
 		for (int i = 0; i < places; i++) {
 			addRandomSceneryItem(map, HistoryGenPattern.sceneryForest, 8, forestIds, 0.9);
 		}

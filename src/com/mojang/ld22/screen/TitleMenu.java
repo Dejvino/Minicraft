@@ -79,7 +79,7 @@ public class TitleMenu extends Menu {
 				msg = "> " + msg + " <";
 				col = Color.get(0, 555, 555, 555);
 			}
-			Font.draw(msg, screen, (screen.w - msg.length() * 8) / 2, (16 + i) * 8, col);
+			Font.draw(msg, screen, (screen.w - msg.length() * 8) / 2, (10 + i) * 12, col);
 		}
 
 		Font.draw("(Arrow keys,X and C, F5 and F9)", screen, 0, screen.h - 8, Color.get(0, 111, 111, 111));

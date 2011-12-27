@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.security.AccessControlException;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -36,9 +37,13 @@ public class GameContainer
 	private JFrame jFrame;
 	
 	private Game game;
+	private GameSetup setup;
 	
 	private GameContainer()
 	{
+		this.setup = new GameSetup();
+		// TODO: load setup from file
+		
 		this.game = new Game();
 		this.game.initGraphics();
 		this.game.setMenu(new TitleMenu());
@@ -75,6 +80,26 @@ public class GameContainer
 	public void setGame(Game game)
 	{
 		this.game = game;
+	}
+	
+	/**
+	 * Returns the current game setup.
+	 * 
+	 * @return
+	 */
+	public GameSetup getSetup()
+	{
+		return this.setup;
+	}
+	
+	/**
+	 * Changes the game setup.
+	 * 
+	 * @param setup
+	 */
+	public void setSetup(GameSetup setup)
+	{
+		this.setup = setup;
 	}
 	
 	/**
@@ -123,34 +148,39 @@ public class GameContainer
 	 */
 	public void saveGame()
 	{
-		// create a file chooser
-		final JFileChooser fc = new JFileChooser();
-
-		// choose file
-		int returnVal = fc.showSaveDialog(null);
-		if (returnVal != JFileChooser.APPROVE_OPTION) {
-            System.out.println("Game saving canceled by user.\n");
-            return;
-        }
-		
-		// get file
-		File file = fc.getSelectedFile();
-        System.out.println("Saving: " + file.getName() + ".\n");
-        
-        // save game to file
 		try {
-            FileOutputStream fileOut = new FileOutputStream(file);
-            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+			// create a file chooser
+			final JFileChooser fc = new JFileChooser();
 
-            out.writeObject(this.game);
-            
-            out.close();
-            fileOut.close();
-        } catch(FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+			// choose file
+			int returnVal = fc.showSaveDialog(null);
+			if (returnVal != JFileChooser.APPROVE_OPTION) {
+	            System.out.println("Game saving canceled by user.\n");
+	            return;
+	        }
+			
+			// get file
+			File file = fc.getSelectedFile();
+	        System.out.println("Saving: " + file.getName() + ".\n");
+	        
+	        // save game to file
+			try {
+	            FileOutputStream fileOut = new FileOutputStream(file);
+	            ObjectOutputStream out = new ObjectOutputStream(fileOut);
+	
+	            out.writeObject(this.game);
+	            
+	            out.close();
+	            fileOut.close();
+	        } catch(FileNotFoundException e) {
+	            e.printStackTrace();
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	        }
+		} catch (AccessControlException e) {
+			// no saving for you!
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -160,46 +190,51 @@ public class GameContainer
 	 */
 	public void loadGame()
 	{
-		// create a file chooser
-		final JFileChooser fc = new JFileChooser();
-
-		// choose file
-		int returnVal = fc.showOpenDialog(null);
-		if (returnVal != JFileChooser.APPROVE_OPTION) {
-            System.out.println("Game loading canceled by user.\n");
-            return;
-        }
-		
-		// get file
-		File file = fc.getSelectedFile();
-        System.out.println("Opening: " + file.getName() + ".\n");
-        
-        // load game from file
-        Game newGame = null;
 		try {
-            FileInputStream fileIn = new FileInputStream(file);
-            ObjectInputStream in = new ObjectInputStream(fileIn);
+			// create a file chooser
+			final JFileChooser fc = new JFileChooser();
 
-            newGame = (Game)in.readObject();
-            
-            in.close();
-            fileIn.close();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-            return;
-        } catch(FileNotFoundException e) {
-            e.printStackTrace();
-            return;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return;
-        }
-		
-		// swap games
-		this.stopGame();
-		this.game = newGame;
-		this.game.loadGame();
-		this.startGame();
+			// choose file
+			int returnVal = fc.showOpenDialog(null);
+			if (returnVal != JFileChooser.APPROVE_OPTION) {
+	            System.out.println("Game loading canceled by user.\n");
+	            return;
+	        }
+			
+			// get file
+			File file = fc.getSelectedFile();
+	        System.out.println("Opening: " + file.getName() + ".\n");
+	        
+	        // load game from file
+	        Game newGame = null;
+			try {
+	            FileInputStream fileIn = new FileInputStream(file);
+	            ObjectInputStream in = new ObjectInputStream(fileIn);
+	
+	            newGame = (Game)in.readObject();
+	            
+	            in.close();
+	            fileIn.close();
+	        } catch (ClassNotFoundException e) {
+	            e.printStackTrace();
+	            return;
+	        } catch(FileNotFoundException e) {
+	            e.printStackTrace();
+	            return;
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            return;
+	        }
+			
+			// swap games
+			this.stopGame();
+			this.game = newGame;
+			this.game.loadGame();
+			this.startGame();
+		} catch (AccessControlException e) {
+			// no loading for you!
+			e.printStackTrace();
+		}
 	}
 	
 	public static void main(String[] args)

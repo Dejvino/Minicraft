@@ -8,6 +8,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.imageio.ImageIO;
 
 import com.mojang.ld22.Game;
+import com.mojang.ld22.GameContainer;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.gfx.Font;
 import com.mojang.ld22.gfx.Screen;
@@ -29,6 +30,7 @@ public class GeneratorMenu extends Menu {
 		// generate a game in the background
 		loaded = new AtomicBoolean();
 		loaded.set(false);
+		parent.game.setSetup(GameContainer.getInstance().getSetup());
 		Thread thread = new Thread() {
 			public void run() {
 				// generate a new world
@@ -50,11 +52,12 @@ public class GeneratorMenu extends Menu {
 		if (loaded.get()) {
 			DialogMenu welcome = new DialogMenu();
 			welcome.setTitle("Introduction");
-			welcome.setText("You have awakened.\n" +
-				"Why? Where? You have no idea.\n" +
-				"The sun seems to be rising up. " +
-				"But it will be dark soon so you better find a place to stay. " +
-				"Dark creatures come out at night. Dangerous creatures...");
+			welcome.setText("You have awakened.\n\n" +
+				"Why? Where?\nYou have no idea.\n" +
+				"\nThe sun seems to be rising up " +
+				"and your dwarven stomach is in need of some ale.\n" +
+				"\nBut it will be dark again soon so you better find a place to stay. " +
+				"Dark creatures come out at night. Dangerous creatures.");
 			game.setMenu(welcome);
 		}
 	}

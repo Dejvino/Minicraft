@@ -30,14 +30,20 @@ import com.mojang.ld22.screen.Menu;
 import com.mojang.ld22.screen.TitleMenu;
 import com.mojang.ld22.screen.WonMenu;
 
-public class Game extends Canvas implements Runnable, Externalizable {
-	private static final long serialVersionUID = 1L;
+public class Game extends Canvas implements Runnable, Externalizable
+{
+	private static final long serialVersionUID = 2L;
+	
 	private Random random = new Random();
+	
 	public static final String NAME = "Alecraft";
+	public static final String VERSION = "0.1.0";
 	public static final int HEIGHT = 200;
 	public static final int WIDTH = 300;
 	public static final int SCALE = 3;
 
+	private GameSetup setup = new GameSetup();
+	
 	private BufferedImage image = new BufferedImage(WIDTH, HEIGHT, BufferedImage.TYPE_INT_RGB);
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 	private boolean running = false;
@@ -66,6 +72,16 @@ public class Game extends Canvas implements Runnable, Externalizable {
 	public void setMenu(Menu menu) {
 		this.menu = menu;
 		if (menu != null) menu.init(this, input);
+	}
+	
+	public GameSetup getSetup()
+	{
+		return this.setup;
+	}
+	
+	public void setSetup(GameSetup setup)
+	{
+		this.setup = setup;
 	}
 	
 	/**
@@ -192,7 +208,15 @@ public class Game extends Canvas implements Runnable, Externalizable {
 
 			if (shouldRender) {
 				frames++;
-				render();
+				try {
+					render();
+				} catch (IllegalStateException e) {
+					// this is where it gets messed up so we bail out!
+					System.err.println("Game thread exiting, rendering failed:");
+					e.printStackTrace();
+					running = false;
+					break;
+				}
 			}
 
 			if (System.currentTimeMillis() - lastTimer1 > 1000) {
@@ -316,13 +340,15 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		level.renderLight(lightScreen, xScroll, yScroll);
 		
 		// render fog-of-war
-		fogScreen.clear(0);
-		level.renderFog(fogScreen, lightScreen, xScroll, yScroll);
-		screen.overlay(fogScreen, xScroll, yScroll);
+		if (!setup.disableFogOfWar) {
+			fogScreen.clear(0);
+			level.renderFog(fogScreen, lightScreen, xScroll, yScroll);
+			screen.overlay(fogScreen, xScroll, yScroll);
+		}
 		
 		// render darkness
-		if (currentLevel < 3) {
-			//screen.overlay(lightScreen, xScroll, yScroll);
+		if (currentLevel < 3 && setup.disableFogOfWar) {
+			screen.overlay(lightScreen, xScroll, yScroll);
 		}
 	}
 
@@ -428,6 +454,7 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		this.tickCount = in.readInt();
 		this.wonTimer = in.readInt();
 		this.running = in.readBoolean();
+		this.setup = (GameSetup)in.readObject();
 		this.screen = (Screen)in.readObject();
 		
 		this.player.setGame(this);
@@ -452,6 +479,7 @@ public class Game extends Canvas implements Runnable, Externalizable {
 		out.writeInt(this.tickCount);
 		out.writeInt(this.wonTimer);
 		out.writeBoolean(this.running);
+		out.writeObject(this.setup);
 		out.writeObject(this.screen);
 	}
 }

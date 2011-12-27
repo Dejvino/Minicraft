@@ -1,5 +1,6 @@
 package com.mojang.ld22.screen;
 
+import com.mojang.ld22.Game;
 import com.mojang.ld22.GameContainer;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.gfx.Font;
@@ -9,7 +10,7 @@ import com.mojang.ld22.sound.Sound;
 public class TitleMenu extends Menu {
 	private int selected = 0;
 
-	private static final String[] options = { "Start game", "Load game", "How to play", "About" };
+	private static final String[] options = { "Start game", "Load game", "How to play", "Setup", "About" };
 
 	public TitleMenu() {
 	}
@@ -34,7 +35,8 @@ public class TitleMenu extends Menu {
 				GameContainer.getInstance().loadGame();
 			}
 			if (selected == 2) game.setMenu(new InstructionsMenu(this));
-			if (selected == 3) game.setMenu(new AboutMenu(this));
+			if (selected == 3) game.setMenu(new SetupMenu(this));
+			if (selected == 4) game.setMenu(new AboutMenu(this));
 		}
 	}
 
@@ -52,6 +54,8 @@ public class TitleMenu extends Menu {
 					screen.render(xo + x * 8, yo + y * 8, x + (y + 6) * 32, titleColor, 0);
 				}
 			}
+			// version
+			Font.draw("v"+Game.VERSION, screen, 2, 2, Color.get(0, 111, 111, 111));
 		}
 		
 		{ // logo image
@@ -78,6 +82,6 @@ public class TitleMenu extends Menu {
 			Font.draw(msg, screen, (screen.w - msg.length() * 8) / 2, (16 + i) * 8, col);
 		}
 
-		Font.draw("(Arrow keys,X and C)", screen, 0, screen.h - 8, Color.get(0, 111, 111, 111));
+		Font.draw("(Arrow keys,X and C, F5 and F9)", screen, 0, screen.h - 8, Color.get(0, 111, 111, 111));
 	}
 }

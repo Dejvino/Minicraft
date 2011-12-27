@@ -34,7 +34,7 @@ public class AboutMenu extends Menu {
 		miniLoaded.set(false);
 		Thread thread = new Thread() {
 			public void run() {
-				miniGame = new Level(64, 64, 0, null);
+				miniGame = new Level(128, 128, 0, null);
 				miniGame.trySpawn(10000);
 				// simulate some history
 				for (int i = 0; i < 1000; i++) {

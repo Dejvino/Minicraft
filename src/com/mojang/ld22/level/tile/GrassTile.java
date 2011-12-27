@@ -96,4 +96,17 @@ public class GrassTile extends Tile {
 	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
 		return 5;
 	}
+	
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return 1;
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		level.setTile(xt, yt, Tile.dirt, 0);
+	}
 }

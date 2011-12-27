@@ -83,7 +83,7 @@ public class InputHandler implements KeyListener {
 		if (ke.getKeyCode() == KeyEvent.VK_RIGHT) right.toggle(pressed);
 
 		if (ke.getKeyCode() == KeyEvent.VK_TAB) menu.toggle(pressed);
-		if (ke.getKeyCode() == KeyEvent.VK_ALT) menu.toggle(pressed);
+		//if (ke.getKeyCode() == KeyEvent.VK_ALT) menu.toggle(pressed); // THIS KEY SUCKS!
 		if (ke.getKeyCode() == KeyEvent.VK_ALT_GRAPH) menu.toggle(pressed);
 		if (ke.getKeyCode() == KeyEvent.VK_SPACE) attack.toggle(pressed);
 		if (ke.getKeyCode() == KeyEvent.VK_CONTROL) attack.toggle(pressed);

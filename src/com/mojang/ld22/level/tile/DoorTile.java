@@ -3,6 +3,8 @@ package com.mojang.ld22.level.tile;
 import com.mojang.ld22.entity.Entity;
 import com.mojang.ld22.entity.ItemEntity;
 import com.mojang.ld22.entity.Player;
+import com.mojang.ld22.entity.particle.SmashParticle;
+import com.mojang.ld22.entity.particle.TextParticle;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.gfx.Screen;
 import com.mojang.ld22.item.Item;
@@ -17,9 +19,11 @@ public class DoorTile extends Tile {
 	private static final long serialVersionUID = 1558626257008145034L;
 
 	private Tile onType;
-	
+
+	public static final int MAX_DAMAGE = 10;
 	public static final int OPENED_FLAG = 1 << 4;
 	public static final int LOCKED_FLAG = 1 << 5;
+	public static final int HEALTH_MASK = OPENED_FLAG - 1;
 
 	public DoorTile(int id) {
 		this(id, Tile.dirt);
@@ -85,12 +89,41 @@ public class DoorTile extends Tile {
 	}
 	
 	public void hurt(Level level, int x, int y, Entity source, int dmg, int attackDir) {
-		level.setTile(x, y, onType, 0);
+		int damage = (level.getData(x, y) & HEALTH_MASK) + dmg;
+		level.add(new SmashParticle(x * 16 + 8, y * 16 + 8));
+		level.add(new TextParticle("" + dmg, x * 16 + 8, y * 16 + 8, Color.get(-1, 500, 500, 500)));
+		if (damage >= MAX_DAMAGE) {
+			int count = random.nextInt(2) + 1;
+			for (int i = 0; i < count; i++) {
+				level.add(new ItemEntity(new ResourceItem(Resource.wood), x * 16 + random.nextInt(10) + 3, y * 16 + random.nextInt(10) + 3));
+			}
+			level.setTile(x, y, Tile.dirt, 0);
+		} else {
+			level.setData(x, y, level.getData(x, y)^(level.getData(x,y) & HEALTH_MASK) + damage);
+		}
 	}
 	
 	@Override
 	public boolean mayPass(Level level, int x, int y, Entity e)
 	{
 		return (level.getData(x, y) & OPENED_FLAG) > 0;
+	}
+	
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return MAX_DAMAGE - (level.getData(xt, yt) & HEALTH_MASK);
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		int damage = (level.getData(xt, yt) & HEALTH_MASK) + burnPower;
+		if (damage >= MAX_DAMAGE) {
+			level.setTile(xt, yt, Tile.dirt, 0);
+		} else {
+			level.setData(xt, yt, (level.getData(xt, yt)^(level.getData(xt,yt) & HEALTH_MASK)) + damage);
+		}
 	}
 }

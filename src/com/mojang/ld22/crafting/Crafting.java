@@ -42,6 +42,7 @@ public class Crafting {
 			workbenchRecipes.add(new ResourceRecipe(Resource.stoneTile, 4).addCost(Resource.stone, 2));
 			workbenchRecipes.add(new ResourceRecipe(Resource.door, 1).addCost(Resource.wood, 1).addCost(Resource.plank, 4));
 			workbenchRecipes.add(new ResourceRecipe(Resource.window, 1).addCost(Resource.glass, 4).addCost(Resource.plank, 4));
+			workbenchRecipes.add(new ResourceRecipe(Resource.torch, 1).addCost(Resource.wood, 6));
 
 			anvilRecipes.add(new ToolRecipe(ToolType.sword, 2).addCost(Resource.wood, 5).addCost(Resource.ironIngot, 5));
 			anvilRecipes.add(new ToolRecipe(ToolType.axe, 2).addCost(Resource.wood, 5).addCost(Resource.ironIngot, 5));

@@ -37,4 +37,17 @@ public class SaplingTile extends Tile {
 	public void hurt(Level level, int x, int y, Entity source, int dmg, int attackDir) {
 		level.setTile(x, y, onType, 0);
 	}
+	
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return 1;
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		level.setTile(xt, yt, Tile.dirt, 0);
+	}
 }

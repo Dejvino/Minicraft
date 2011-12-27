@@ -85,10 +85,10 @@ public class LevelGen {
 			for (int i = 0; i < w * h; i++) {
 				count[result[0][i] & 0xff]++;
 			}
-			if (count[Tile.rock.id & 0xff] < h) continue;
-			if (count[Tile.sand.id & 0xff] < h) continue;
-			if (count[Tile.grass.id & 0xff] < h) continue;
-			if (count[Tile.tree.id & 0xff] < h) continue;
+			if (count[Tile.rock.id & 0xff] < h/2) continue;
+			if (count[Tile.sand.id & 0xff] < h/2) continue;
+			if (count[Tile.grass.id & 0xff] < h/2) continue;
+			if (count[Tile.tree.id & 0xff] < h/2) continue;
 			if (count[Tile.stairsDown.id & 0xff] < 2) continue;
 
 			int attemptHistory = 0;
@@ -112,10 +112,10 @@ public class LevelGen {
 				for (int i = 0; i < w * h; i++) {
 					count[humans[0][i] & 0xff]++;
 				}
-				if (count[Tile.woodenWall.id & 0xff] < 40) continue;
-				if (count[Tile.rockWall.id & 0xff] < 20) continue;
-				if (count[Tile.rockFloor.id & 0xff] < 10) continue;
-				if (count[Tile.fence.id & 0xff] < 10) continue;
+				if (count[Tile.woodenWall.id & 0xff] < 10) continue;
+				if (count[Tile.rockWall.id & 0xff] < 5) continue;
+				if (count[Tile.rockFloor.id & 0xff] < 5) continue;
+				if (count[Tile.fence.id & 0xff] < 5) continue;
 				if (count[Tile.farmland.id & 0xff] < 5) continue;
 				
 				return humans;

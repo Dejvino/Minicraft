@@ -3,6 +3,7 @@ package com.mojang.ld22.item.resource;
 import java.io.Serializable;
 
 import com.mojang.ld22.entity.Player;
+import com.mojang.ld22.entity.Torch;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.level.Level;
 import com.mojang.ld22.level.tile.DirtTile;
@@ -16,7 +17,7 @@ public class Resource implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public static Resource wood = new Resource("Wood", 1 + 4 * 32, Color.get(-1, 300, 522, 532));
+	public static Resource wood = new Resource("Wood", 1 + 4 * 32, Color.get(-1, 300, 421, 321));
 	public static Resource stone = new Resource("Stone", 2 + 4 * 32, Color.get(-1, 111, 333, 555));
 	public static Resource flower = new PlantableResource("Flower", 0 + 4 * 32, Color.get(-1, 10, 444, 330), Tile.flower, Tile.grass);
 	public static Resource acorn = new PlantableResource("Acorn", 3 + 4 * 32, Color.get(-1, 100, 531, 320), Tile.treeSapling, Tile.grass);
@@ -44,6 +45,8 @@ public class Resource implements Serializable {
 	public static Resource stoneTile = new Resource("tile", 1 + 4 * 32, Color.get(-1, 222, 555, 444));
 	public static Resource door = new Resource("door", 6 + 10 * 32, Color.get(-1, 300, 522, 532));
 	public static Resource window = new Resource("window", 6 + 10 * 32, Color.get(-1, 224, 225, 224));
+	
+	public static Resource torch = new Resource("torch", 7 + 10 * 32, Color.get(-1, 200, 441, 554));
 
 	public final String name;
 	public final int sprite;
@@ -104,6 +107,16 @@ public class Resource implements Serializable {
 					level.setTile(xt, yt, t, 0);
 					return true;
 				}
+			}
+		}
+		if (this.equals(torch)) {
+			// place torch on dirt and grass and stone floor and sand
+			if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)
+					|| Tile.rockFloor.equals(tile)
+					|| Tile.flower.equals(tile)
+					|| Tile.sand.equals(tile)) && !sameTile) {
+				level.add(new Torch(player, (xt << 4)+8, (yt << 4)+8));
+				return true;
 			}
 		}
 		return false;

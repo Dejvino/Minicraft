@@ -113,6 +113,46 @@ public class Tile implements Serializable {
 	public boolean connectsToLiquid() {
 		return connectsToWater || connectsToLava;
 	}
+
+	/**
+	 * Returns the number of units remaining to burn.
+	 * 
+	 * @param level
+	 * @param xt
+	 * @param yt
+	 * @return
+	 */
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return 0;
+	}
+
+	/**
+	 * Burns the given amount of fire fuel.
+	 * 
+	 * @param level
+	 * @param xt
+	 * @param yt
+	 * @param burnPower
+	 * @param fire
+	 */
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+	}
+	
+	/**
+	 * Checks whether the tile is flammable (has fuel to burn).
+	 * 
+	 * @param level
+	 * @param xt
+	 * @param yt
+	 * @return
+	 */
+	public boolean isFlammable(Level level, int xt, int yt)
+	{
+		return getFireFuelAmount(level, xt, yt) > 0;
+	}
 	
 	@Override
 	public boolean equals(Object obj)

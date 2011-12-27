@@ -15,6 +15,9 @@ import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 
 public class WindowTile extends Tile {
+
+	public static final int MAX_DAMAGE = 10;
+	
 	private Tile onType;
 	private boolean opened = false;
 	private boolean locked = false;
@@ -77,7 +80,7 @@ public class WindowTile extends Tile {
 		int damage = level.getData(x, y) + dmg;
 		level.add(new SmashParticle(x * 16 + 8, y * 16 + 8));
 		level.add(new TextParticle("" + dmg, x * 16 + 8, y * 16 + 8, Color.get(-1, 500, 500, 500)));
-		if (damage >= 10) {
+		if (damage >= MAX_DAMAGE) {
 			level.setTile(x, y, onType, 0);
 		} else {
 			level.setData(x, y, damage);
@@ -94,5 +97,23 @@ public class WindowTile extends Tile {
 	public int getVisibilityBlocking(Level level, int x, int y, Entity e)
 	{
 		return 10;
+	}
+	
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return MAX_DAMAGE - level.getData(xt, yt);
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		int damage = level.getData(xt, yt) + burnPower;
+		if (damage >= MAX_DAMAGE) {
+			level.setTile(xt, yt, Tile.dirt, 0);
+		} else {
+			level.setData(xt, yt, damage);
+		}
 	}
 }

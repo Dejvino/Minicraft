@@ -15,6 +15,8 @@ import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 
 public class TreeTile extends Tile {
+	public static final int MAX_DAMAGE = 20;
+	
 	public TreeTile(int id) {
 		super(id);
 		connectsToGrass = true;
@@ -57,8 +59,17 @@ public class TreeTile extends Tile {
 	}
 
 	public void tick(Level level, int xt, int yt) {
+		// heal
 		int damage = level.getData(xt, yt);
 		if (damage > 0) level.setData(xt, yt, damage - 1);
+		// grow
+		if (random.nextInt(1000) == 0) {
+			int xa = xt + random.nextInt(2)*2 - 1;
+			int ya = yt + random.nextInt(2)*2 - 1;
+			if (level.getTile(xa, ya).equals(Tile.grass)) {
+				level.setTile(xa, ya, Tile.treeSapling, 0);
+			}
+		}
 	}
 
 	public boolean mayPass(Level level, int x, int y, Entity e) {
@@ -92,7 +103,7 @@ public class TreeTile extends Tile {
 		int damage = level.getData(x, y) + dmg;
 		level.add(new SmashParticle(x * 16 + 8, y * 16 + 8));
 		level.add(new TextParticle("" + dmg, x * 16 + 8, y * 16 + 8, Color.get(-1, 500, 500, 500)));
-		if (damage >= 20) {
+		if (damage >= MAX_DAMAGE) {
 			int count = random.nextInt(2) + 1;
 			for (int i = 0; i < count; i++) {
 				level.add(new ItemEntity(new ResourceItem(Resource.wood), x * 16 + random.nextInt(10) + 3, y * 16 + random.nextInt(10) + 3));
@@ -109,5 +120,23 @@ public class TreeTile extends Tile {
 	
 	public int getVisibilityBlocking(Level level, int x, int y, Entity e) {
 		return 50;
+	}
+	
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return MAX_DAMAGE - level.getData(xt, yt);
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		int damage = level.getData(xt, yt) + burnPower;
+		if (damage >= MAX_DAMAGE) {
+			level.setTile(xt, yt, Tile.dirt, 0);
+		} else {
+			level.setData(xt, yt, damage);
+		}
 	}
 }

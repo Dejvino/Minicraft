@@ -86,4 +86,23 @@ public class WheatTile extends Tile {
 
 		level.setTile(x, y, Tile.dirt, 0);
 	}
+	
+
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return level.getData(xt, yt);
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		int hp = level.getData(xt, yt) - burnPower;
+		if (hp <= 0) {
+			level.setTile(xt, yt, Tile.farmland, 0);
+		} else {
+			level.setData(xt, yt, hp);
+		}
+	}
 }

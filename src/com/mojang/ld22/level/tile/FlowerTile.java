@@ -54,4 +54,17 @@ public class FlowerTile extends GrassTile {
 		}
 		level.setTile(x, y, Tile.grass, 0);
 	}
+	
+	@Override
+	public int getFireFuelAmount(Level level, int xt, int yt)
+	{
+		return 1;
+	}
+
+	@Override
+	public void burnFireFuel(Level level, int xt, int yt, int burnPower,
+			Entity ent)
+	{
+		level.setTile(xt, yt, Tile.dirt, 0);
+	}
 }

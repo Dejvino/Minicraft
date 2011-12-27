@@ -128,7 +128,7 @@ public class Fire extends Entity {
 	 */
 	protected void trySpreading()
 	{
-		if (random.nextInt(burnCycle * 2 / burnPower) == 0) {
+		if (random.nextInt(burnCycle * 4 / burnPower) == 0) {
 			int fx = this.x + ((random.nextInt(8)+8) * (random.nextInt(2)*2-1));
 			int fy = this.y + ((random.nextInt(8)+8) * (random.nextInt(2)*2-1));
 			if (level.getTile(fx >> 4, fy >> 4).isFlammable(level, fx >> 4, fy >> 4)) {

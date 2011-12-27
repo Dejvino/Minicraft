@@ -1,9 +1,14 @@
 package com.mojang.ld22.item.resource;
 
 import java.io.Serializable;
+import java.util.Random;
 
+import com.mojang.ld22.Game;
+import com.mojang.ld22.entity.Fire;
 import com.mojang.ld22.entity.Player;
+import com.mojang.ld22.entity.Spark;
 import com.mojang.ld22.entity.Torch;
+import com.mojang.ld22.entity.particle.TextParticle;
 import com.mojang.ld22.gfx.Color;
 import com.mojang.ld22.level.Level;
 import com.mojang.ld22.level.tile.DirtTile;
@@ -47,6 +52,7 @@ public class Resource implements Serializable {
 	public static Resource window = new Resource("window", 6 + 10 * 32, Color.get(-1, 224, 225, 224));
 	
 	public static Resource torch = new Resource("torch", 7 + 10 * 32, Color.get(-1, 200, 441, 554));
+	public static Resource flint = new Resource("Flint", 2 + 4 * 32, Color.get(-1, 111, 222, 333));
 
 	public final String name;
 	public final int sprite;
@@ -61,6 +67,7 @@ public class Resource implements Serializable {
 
 	public boolean interactOn(Tile tile, Level level, int xt, int yt, Player player, int attackDir) {
 		boolean sameTile = (xt == (player.x >> 4)) && (yt == (player.y >> 4));
+		Random rand = new Random();
 		if (this.equals(wood)) {
 			// build wooden wall on dirt and grass
 			if ((Tile.dirt.equals(tile) || Tile.grass.equals(tile)) && !sameTile) {
@@ -117,6 +124,26 @@ public class Resource implements Serializable {
 					|| Tile.sand.equals(tile)) && !sameTile) {
 				level.add(new Torch(player, (xt << 4)+8, (yt << 4)+8));
 				return true;
+			}
+		}
+		if (this.equals(flint)) {
+			// put a pile of wood (wall) on fire (maybe)
+			if ((Tile.woodenWall.equals(tile)) && !sameTile) {
+				// make sparks
+				int sparks = rand.nextInt(5)+2;
+				for (int i = 0; i < sparks; i++) {
+					String sparkChars = ".,-+x";
+					String sparkType = ""+sparkChars.charAt(rand.nextInt(sparkChars.length()));
+					level.add(new TextParticle(sparkType, (xt << 4)+8, (yt << 4)+8, Color.get(-1, 554, 554, 554)));
+				}
+				// try to light it
+				if (rand.nextInt(8) == 0) {
+					level.add(new Fire(player, (xt << 4)+8, (yt << 4)+8, 1, 100));
+				}
+				// randomly loose the item
+				if (rand.nextInt(20) == 0) {
+					return true;
+				}
 			}
 		}
 		return false;

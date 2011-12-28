@@ -9,6 +9,7 @@ import com.mojang.ld22.entity.Furnace;
 import com.mojang.ld22.entity.Oven;
 import com.mojang.ld22.entity.Lantern;
 import com.mojang.ld22.entity.Workbench;
+import com.mojang.ld22.entity.Brewery;
 import com.mojang.ld22.item.ToolType;
 import com.mojang.ld22.item.resource.Resource;
 
@@ -17,6 +18,7 @@ public class Crafting {
 	public static final List<Recipe> ovenRecipes = new ArrayList<Recipe>();
 	public static final List<Recipe> furnaceRecipes = new ArrayList<Recipe>();
 	public static final List<Recipe> workbenchRecipes = new ArrayList<Recipe>();
+	public static final List<Recipe> breweryRecipes = new ArrayList<Recipe>();
 
 	static {
 		try {
@@ -27,6 +29,7 @@ public class Crafting {
 			workbenchRecipes.add(new FurnitureRecipe(Workbench.class).addCost(Resource.wood, 20));
 			workbenchRecipes.add(new FurnitureRecipe(Chest.class).addCost(Resource.wood, 20));
 			workbenchRecipes.add(new FurnitureRecipe(Anvil.class).addCost(Resource.ironIngot, 5));
+			workbenchRecipes.add(new FurnitureRecipe(Brewery.class).addCost(Resource.wood, 5).addCost(Resource.glass, 2).addCost(Resource.bottle, 1));
 
 			workbenchRecipes.add(new ToolRecipe(ToolType.sword, 0).addCost(Resource.wood, 5));
 			workbenchRecipes.add(new ToolRecipe(ToolType.axe, 0).addCost(Resource.wood, 5));
@@ -42,7 +45,7 @@ public class Crafting {
 			workbenchRecipes.add(new ResourceRecipe(Resource.stoneTile, 4).addCost(Resource.stone, 2));
 			workbenchRecipes.add(new ResourceRecipe(Resource.door, 1).addCost(Resource.wood, 1).addCost(Resource.plank, 4));
 			workbenchRecipes.add(new ResourceRecipe(Resource.window, 1).addCost(Resource.glass, 4).addCost(Resource.plank, 4));
-			workbenchRecipes.add(new ResourceRecipe(Resource.torch, 1).addCost(Resource.wood, 6));
+			workbenchRecipes.add(new ResourceRecipe(Resource.torch, 1).addCost(Resource.wood, 4).addCost(Resource.slime, 1));
 
 			anvilRecipes.add(new ToolRecipe(ToolType.sword, 2).addCost(Resource.wood, 5).addCost(Resource.ironIngot, 5));
 			anvilRecipes.add(new ToolRecipe(ToolType.axe, 2).addCost(Resource.wood, 5).addCost(Resource.ironIngot, 5));
@@ -65,6 +68,9 @@ public class Crafting {
 			furnaceRecipes.add(new ResourceRecipe(Resource.ironIngot).addCost(Resource.ironOre, 4).addCost(Resource.coal, 1));
 			furnaceRecipes.add(new ResourceRecipe(Resource.goldIngot).addCost(Resource.goldOre, 4).addCost(Resource.coal, 1));
 			furnaceRecipes.add(new ResourceRecipe(Resource.glass).addCost(Resource.sand, 4).addCost(Resource.coal, 1));
+			furnaceRecipes.add(new ResourceRecipe(Resource.bottle).addCost(Resource.glass, 1).addCost(Resource.coal, 1));
+			
+			breweryRecipes.add(new ResourceRecipe(Resource.ale).addCost(Resource.wheat, 4).addCost(Resource.bottle, 1).addCost(Resource.coal, 1));
 
 			ovenRecipes.add(new ResourceRecipe(Resource.bread).addCost(Resource.wheat, 4));
 		} catch (Exception e) {

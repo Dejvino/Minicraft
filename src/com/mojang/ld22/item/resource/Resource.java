@@ -54,6 +54,9 @@ public class Resource implements Serializable {
 	public static Resource torch = new Resource("torch", 7 + 10 * 32, Color.get(-1, 200, 441, 554));
 	public static Resource flint = new Resource("Flint", 2 + 4 * 32, Color.get(-1, 111, 222, 333));
 
+	public static Resource bottle = new Resource("Bottle", 14 + 4 * 32, Color.get(-1, 225, -1, 335));
+	public static Resource ale = new FoodResource("Ale", 14 + 4 * 32, Color.get(-1, 421, 521, 335), 5, 8);
+
 	public final String name;
 	public final int sprite;
 	public final int color;

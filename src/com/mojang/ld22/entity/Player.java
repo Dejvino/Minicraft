@@ -52,6 +52,14 @@ public class Player extends LivingEntity {
 
 		inventory.add(new FurnitureItem(new Workbench()));
 		inventory.add(new PowerGloveItem());
+		/*/ Cheats
+		inventory.add(new ResourceItem(Resource.flint, 100));
+		inventory.add(new ResourceItem(Resource.wood, 100));
+		inventory.add(new ResourceItem(Resource.stone, 100));
+		inventory.add(new ResourceItem(Resource.glass, 100));
+		inventory.add(new ResourceItem(Resource.coal, 100));
+		inventory.add(new ResourceItem(Resource.wheat, 100));
+		/**/
 	}
 
 	public void setGame(Game game)
@@ -379,6 +387,7 @@ public class Player extends LivingEntity {
 	public int getLightRadius() {
 		int r = 0;
 		if (activeItem != null) {
+			// TODO: light radius while holding a torch
 			if (activeItem instanceof FurnitureItem) {
 				int rr = ((FurnitureItem) activeItem).furniture.getLightRadius();
 				if (rr > r) r = rr;

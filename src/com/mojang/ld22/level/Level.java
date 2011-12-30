@@ -7,7 +7,6 @@ import java.io.ObjectOutput;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Random;
 
@@ -407,7 +406,7 @@ public class Level implements Externalizable
 			}
 
 			int lvl = random.nextInt(maxLevel - minLevel + 1) + minLevel;
-			int type = random.nextInt(3);
+			int type = random.nextInt(5);
 			switch (type) {
 				default:
 				case 0:

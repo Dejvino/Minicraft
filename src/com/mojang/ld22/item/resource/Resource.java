@@ -144,7 +144,7 @@ public class Resource implements Serializable {
 					level.add(new Fire(player, (xt << 4)+8, (yt << 4)+8, 1, 100));
 				}
 				// randomly loose the item
-				if (rand.nextInt(20) == 0) {
+				if (rand.nextInt(5) == 0) {
 					return true;
 				}
 			}

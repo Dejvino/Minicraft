@@ -85,10 +85,10 @@ public class LevelGen {
 			for (int i = 0; i < w * h; i++) {
 				count[result[0][i] & 0xff]++;
 			}
-			if (count[Tile.rock.id & 0xff] < h/2) continue;
-			if (count[Tile.sand.id & 0xff] < h/2) continue;
-			if (count[Tile.grass.id & 0xff] < h/2) continue;
-			if (count[Tile.tree.id & 0xff] < h/2) continue;
+			if (count[Tile.rock.id & 0xff] < h/4) continue;
+			if (count[Tile.sand.id & 0xff] < h/4) continue;
+			if (count[Tile.grass.id & 0xff] < h/4) continue;
+			if (count[Tile.tree.id & 0xff] < h/4) continue;
 			if (count[Tile.stairsDown.id & 0xff] < 2) continue;
 
 			int attemptHistory = 0;
@@ -98,7 +98,7 @@ public class LevelGen {
 				
 				attemptHistory++;
 				if (attemptHistory > 5) {
-					if (attempt > 100) {
+					if (attempt > 10) {
 						// I give up! Take this map and leave!
 						return result;
 					}

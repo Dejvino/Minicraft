@@ -13,6 +13,19 @@ import com.mojang.ld22.item.resource.Resource;
 import com.mojang.ld22.level.Level;
 
 public class FlowerTile extends GrassTile {
+	
+	public static int[] flowerColors = new int[] {
+		// basic
+		555, // white
+		// almost-basic
+		455, 545, 554, 
+		/*/ colored 
+		510, 511, 521, 522, 523, 524, // red
+		225, 135, // blue
+		515, 525, // purple
+		/**/
+	};
+	
 	public FlowerTile(int id) {
 		super(id);
 		tiles[id] = this;
@@ -24,7 +37,8 @@ public class FlowerTile extends GrassTile {
 
 		int data = level.getData(x, y);
 		int shape = (data / 16) % 2;
-		int flowerCol = Color.get(10, level.grassColor, 555, 440);
+		int headColor = flowerColors[(data*7 + x*13 + y*level.w*3)%flowerColors.length];
+		int flowerCol = Color.get(10, level.grassColor, headColor, 440);
 
 		if (shape == 0) screen.render(x * 16 + 0, y * 16 + 0, 1 + 1 * 32, flowerCol, 0);
 		if (shape == 1) screen.render(x * 16 + 8, y * 16 + 0, 1 + 1 * 32, flowerCol, 0);

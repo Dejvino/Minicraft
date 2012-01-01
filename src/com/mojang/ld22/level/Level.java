@@ -211,7 +211,7 @@ public class Level implements Externalizable
 			w = h;
 		}
 		
-		int pX = ((xScroll+8) >> 4) + w / 2;//this.player.x >> 4;
+		int pX = ((xScroll) >> 4) + w / 2;//this.player.x >> 4;
 		int pY = yo + h / 2;//this.player.y >> 4;
 		
 		// resolution of raytracing

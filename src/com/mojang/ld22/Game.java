@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Canvas;
 import java.awt.Dimension;
 import java.awt.Graphics;
+import java.awt.event.KeyEvent;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
@@ -12,10 +13,18 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFrame;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
+import org.lwjgl.opengl.GL11;
 
 import com.mojang.ld22.entity.Player;
 import com.mojang.ld22.gfx.Color;
@@ -32,14 +41,16 @@ import com.mojang.ld22.screen.WonMenu;
 
 public class Game extends Canvas implements Runnable, Externalizable
 {
-	private static final long serialVersionUID = 2L;
+	private static final long serialVersionUID = 3L;
 	
 	private Random random = new Random();
 	
 	public static final String NAME = "Alecraft";
-	public static final String VERSION = "0.1.2";
+	public static final String VERSION = "0.2.0";
 	public static final int HEIGHT = 200;
 	public static final int WIDTH = 300;
+	public static final int HEIGHT_P2 = 256;
+	public static final int WIDTH_P2 = 512;
 	public static final int SCALE = 3;
 
 	private GameSetup setup = new GameSetup();
@@ -48,9 +59,12 @@ public class Game extends Canvas implements Runnable, Externalizable
 	private int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 	private boolean running = false;
 	private Screen screen;
+	private Screen tmpScreen;
 	private Screen lightScreen;
 	private Screen fogScreen;
 	private InputHandler input = new InputHandler(this);
+	
+	private ByteBuffer oglScreen;
 
 	private int[] colors = new int[256];
 	private int tickCount = 0;
@@ -169,11 +183,37 @@ public class Game extends Canvas implements Runnable, Externalizable
 		}
 		try {
 			screen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
+			tmpScreen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
 			lightScreen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
 			fogScreen = new Screen(WIDTH, HEIGHT, new SpriteSheet(ImageIO.read(Game.class.getResourceAsStream("/icons.png"))));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+
+		// init display mode
+		try {
+			Display.setDisplayMode(new DisplayMode(Game.WIDTH*Game.SCALE, Game.HEIGHT*Game.SCALE));
+			Display.create();
+		} catch (LWJGLException e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+
+		// init keyboard
+		try {
+			Keyboard.create();
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.exit(0);
+		}
+				
+		oglScreen = ByteBuffer.allocateDirect(WIDTH_P2 * HEIGHT_P2 * 4);
+		
+		// init OpenGL
+		GL11.glMatrixMode(GL11.GL_PROJECTION);
+		GL11.glLoadIdentity();
+		GL11.glOrtho(0, WIDTH, HEIGHT, 0, 1, -1);
+		GL11.glMatrixMode(GL11.GL_MODELVIEW);
 	}
 
 	public void run() {
@@ -184,7 +224,18 @@ public class Game extends Canvas implements Runnable, Externalizable
 		int ticks = 0;
 		long lastTimer1 = System.currentTimeMillis();
 
+		this.initGraphics();
+		
 		while (running) {
+			// check Close signal
+			if (Display.isCloseRequested()) {
+				this.running = false;
+			}
+			
+			while (Keyboard.next()) {
+				this.input.toggle(Keyboard.getEventKey(), Keyboard.getEventKeyState());
+			}
+			
 			long now = System.nanoTime();
 			unprocessed += (now - lastTime) / nsPerTick;
 			lastTime = now;
@@ -209,7 +260,7 @@ public class Game extends Canvas implements Runnable, Externalizable
 			if (shouldRender) {
 				frames++;
 				try {
-					render();
+					renderOgl();
 				} catch (IllegalStateException e) {
 					// this is where it gets messed up so we bail out!
 					System.err.println("Game thread exiting, rendering failed:");
@@ -221,7 +272,7 @@ public class Game extends Canvas implements Runnable, Externalizable
 
 			if (System.currentTimeMillis() - lastTimer1 > 1000) {
 				lastTimer1 += 1000;
-				//System.out.println(ticks + " ticks, " + frames + " fps");
+				System.out.println(ticks + " ticks, " + frames + " fps");
 				frames = 0;
 				ticks = 0;
 			}
@@ -307,6 +358,151 @@ public class Game extends Canvas implements Runnable, Externalizable
 		bs.show();
 	}
 	
+	/**
+	 * Renders a good old 2D screen using a textured QUAD object.
+	 * 
+	 * @param screen
+	 */
+	private void renderScreenOverlay(Screen screen, double baseAlpha) {
+		int byteBaseAlpha = (int)(baseAlpha * 255);
+		for (int y = 0; y < screen.h; y++) {
+			for (int x = 0; x < screen.w; x++) {
+				int cc = screen.pixels[x + y * screen.w];
+				byte r,g,b,a;
+				r = g = b = 0;
+				if (cc > byteBaseAlpha) {
+					a = (byte)0;
+				} else if (cc < 0) {
+					a = (byte)byteBaseAlpha;
+				} else {
+					a = (byte)(byteBaseAlpha-cc);
+				}
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+3, a);
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+2, r);
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+1, g);
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+0, b);
+			}
+		}
+		GL11.glColor4f(1.0f,1.0f,1.0f, 1.0f);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 1);
+		//GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_LINEAR);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_LINEAR);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, screen.w, screen.h, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+				oglScreen);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glBegin(GL11.GL_QUADS);
+	    	GL11.glTexCoord2d(0, 1);
+		    GL11.glVertex2f(0,0);
+		    GL11.glTexCoord2d(1, 1);
+		    GL11.glVertex2f(screen.w,0);
+		    GL11.glTexCoord2d(1, 0);
+		    GL11.glVertex2f(screen.w,screen.h);
+		    GL11.glTexCoord2d(0, 0);
+		    GL11.glVertex2f(0,screen.h);
+		GL11.glEnd();
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_BLEND);
+		
+		// fallback version
+		//GL11.glPixelZoom(Game.SCALE, Game.SCALE);
+		//GL11.glDrawPixels(screen.w, screen.h, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, oglScreen);
+	}
+	
+	/**
+	 * Renders a good old 2D screen using a textured QUAD object.
+	 * 
+	 * @param screen
+	 */
+	private void renderScreen(Screen screen) {
+		renderScreen(screen, 1);
+	}
+	
+	/**
+	 * Renders a good old 2D screen using a textured QUAD object.
+	 * 
+	 * @param screen
+	 * @param alpha Overall alpha to be used, from 0 to 1 (less than 1 enables blending)
+	 */
+	private void renderScreen(Screen screen, double alpha) {
+		if (alpha <= 0 || alpha > 1) {
+			alpha = 1;
+		}
+		int byteAlpha = (int)(alpha * 255);
+		for (int y = 0; y < screen.h; y++) {
+			for (int x = 0; x < screen.w; x++) {
+				int cc = screen.pixels[x + y * screen.w];
+				byte r,g,b,a;
+				if (cc >= 0 && cc < 255) {
+					r = (byte)(colors[cc] & 0xFF);
+					g = (byte)((colors[cc] >> 8) & 0xFF);
+					b = (byte)((colors[cc] >> 16) & 0xFF);
+					a = (byte)byteAlpha;
+				} else {
+					r = g = b = 0;
+					a = 0;
+				}
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+3, a);
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+2, r);
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+1, g);
+				oglScreen.put(x*4 + (screen.h-y-1)*4 * screen.w+0, b);
+			}
+		}
+		GL11.glColor4f(1.0f,1.0f,1.0f, 1.0f);
+		GL11.glBindTexture(GL11.GL_TEXTURE_2D, 1);
+		//GL11.glPixelStorei(GL11.GL_UNPACK_ALIGNMENT, 1);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, GL11.GL_REPEAT);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, GL11.GL_NEAREST);
+		GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, GL11.GL_NEAREST);
+		GL11.glTexImage2D(GL11.GL_TEXTURE_2D, 0, GL11.GL_RGBA, screen.w, screen.h, 0, GL11.GL_RGBA, GL11.GL_UNSIGNED_BYTE,
+				oglScreen);
+		GL11.glEnable(GL11.GL_TEXTURE_2D);
+		GL11.glEnable(GL11.GL_BLEND);
+		GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+		GL11.glBegin(GL11.GL_QUADS);
+	    	GL11.glTexCoord2d(0, 1);
+		    GL11.glVertex2f(0,0);
+		    GL11.glTexCoord2d(1, 1);
+		    GL11.glVertex2f(screen.w,0);
+		    GL11.glTexCoord2d(1, 0);
+		    GL11.glVertex2f(screen.w,screen.h);
+		    GL11.glTexCoord2d(0, 0);
+		    GL11.glVertex2f(0,screen.h);
+		GL11.glEnd();
+		GL11.glDisable(GL11.GL_TEXTURE_2D);
+		GL11.glDisable(GL11.GL_BLEND);
+		
+		// fallback version
+		//GL11.glPixelZoom(Game.SCALE, Game.SCALE);
+		//GL11.glDrawPixels(screen.w, screen.h, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, oglScreen);
+	}
+
+	public void renderOgl() {
+		// Clear the screen and depth buffer
+		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
+		screen.clear(-1);
+
+		renderOglView();
+
+		renderOglGui();
+
+		if (!hasFocus()) {
+			screen.clear(-1);
+			renderFocusNagger();
+			renderScreen(screen, 0.9);
+		}
+
+		// backward compatible rendering of EVERYTHING
+		//renderScreen(screen);
+		
+		Display.update();
+	}
+	
 	private void renderView()
 	{
 		if (this.gameTime <= 0) {
@@ -352,6 +548,56 @@ public class Game extends Canvas implements Runnable, Externalizable
 		}
 	}
 
+	private void renderOglView()
+	{
+		if (this.gameTime <= 0) {
+			return;
+		}
+
+		// basic 2D
+		int xScroll = player.x - screen.w / 2;
+		int yScroll = player.y - (screen.h - 8) / 2;
+		// we have a nice border, so the player stays in the center!
+		//if (xScroll < 16) xScroll = 16;
+		//if (yScroll < 16) yScroll = 16;
+		//if (xScroll > level.w * 16 - screen.w - 16) xScroll = level.w * 16 - screen.w - 16;
+		//if (yScroll > level.h * 16 - screen.h - 16) yScroll = level.h * 16 - screen.h - 16;
+		
+		if (currentLevel > 3) {
+			int col = Color.get(20, 20, 121, 121);
+			for (int y = 0; y < 14; y++)
+				for (int x = 0; x < 24; x++) {
+					screen.render(x * 8 - ((xScroll / 4) & 7), y * 8 - ((yScroll / 4) & 7), 0, col, 0);
+				}
+		}
+
+	    // render level tiles
+		level.renderBackground(screen, xScroll, yScroll);
+		
+		// render level sprites
+		level.renderSprites(screen, xScroll, yScroll);
+
+		renderScreen(screen);
+		
+		// prepare light-map
+		lightScreen.clear(0);
+		level.renderLight(lightScreen, xScroll, yScroll);
+		
+		// render fog-of-war
+		if (!setup.disableFogOfWar) {
+			fogScreen.clear(0);
+			level.renderFog(fogScreen, lightScreen, xScroll, yScroll);
+			//screen.overlay(fogScreen, xScroll, yScroll);
+			renderScreenOverlay(fogScreen, 1);
+		}
+		
+		
+		// render darkness
+		if (currentLevel < 3 && setup.disableFogOfWar) {
+			//screen.overlay(lightScreen, xScroll, yScroll);
+		}	
+	}
+
 	private void renderGui() {
 		if (this.gameTime > 0) {
 			for (int y = 0; y < 2; y++) {
@@ -385,6 +631,61 @@ public class Game extends Canvas implements Runnable, Externalizable
 
 		if (menu != null) {
 			menu.render(screen);
+		}
+	}
+	
+	private void renderOglGui() {
+		if (this.gameTime > 0) {
+			tmpScreen.clear(-1);
+			
+			// blended UI bar
+			GL11.glEnable(GL11.GL_BLEND);
+			GL11.glBlendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+			GL11.glBegin(GL11.GL_QUAD_STRIP);
+				GL11.glColor4f(0.0f,0.0f,0.0f, 0.0f);
+			    GL11.glVertex2f(screen.w, screen.h - 20);
+			    GL11.glVertex2f(0, screen.h - 20);
+		    
+				GL11.glColor4f(0.0f,0.0f,0.0f, 0.8f);
+			    GL11.glVertex2f(screen.w, screen.h - 16);
+			    GL11.glVertex2f(0, screen.h - 16);
+
+				GL11.glColor4f(0.0f,0.0f,0.0f, 1.0f);
+			    GL11.glVertex2f(screen.w,screen.h);
+			    GL11.glVertex2f(0,screen.h);
+			GL11.glEnd();
+			GL11.glDisable(GL11.GL_BLEND);
+			
+			// bar items 
+			for (int i = 0; i < 10; i++) {
+				// health
+				if (i < player.health)
+					tmpScreen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(-1, 200, 500, 533), 0);
+				else
+					tmpScreen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(-1, 100, 000, 000), 0);
+				// stamina
+				if (player.staminaRechargeDelay > 0) {
+					if (player.staminaRechargeDelay / 4 % 2 == 0)
+						tmpScreen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(-1, 555, 000, 000), 0);
+					else
+						tmpScreen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(-1, 110, 000, 000), 0);
+				} else {
+					if (i < player.stamina)
+						tmpScreen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(-1, 220, 550, 553), 0);
+					else
+						tmpScreen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(-1, 110, 000, 000), 0);
+				}
+			}
+			if (player.activeItem != null) {
+				player.activeItem.renderInventory(tmpScreen, 10 * 8, screen.h - 16);
+			}
+			renderScreen(tmpScreen);
+		}
+		
+		if (menu != null) {
+			tmpScreen.clear(-1);
+			menu.render(tmpScreen);
+			renderScreen(tmpScreen, 0.9);
 		}
 	}
 
@@ -435,6 +736,11 @@ public class Game extends Canvas implements Runnable, Externalizable
 		this.initGraphics();
 	}
 
+	public boolean hasFocus()
+	{
+		return Display.isActive();
+	}
+	
 	@Override
 	public void readExternal(ObjectInput in) throws IOException,
 			ClassNotFoundException

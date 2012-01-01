@@ -10,9 +10,16 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.security.AccessControlException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+
+import org.lwjgl.LWJGLException;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
+import org.lwjgl.opengl.DisplayMode;
 
 import com.mojang.ld22.screen.TitleMenu;
 
@@ -45,7 +52,6 @@ public class GameContainer
 		// TODO: load setup from file
 		
 		this.game = new Game();
-		this.game.initGraphics();
 		this.game.setMenu(new TitleMenu());
 	}
 	
@@ -108,14 +114,6 @@ public class GameContainer
 	 */
 	public void init()
 	{
-		JFrame frame = new JFrame(Game.NAME);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setLayout(new BorderLayout());
-		frame.setResizable(false);
-		frame.setLocationByPlatform(true);
-		frame.setVisible(true);
-		
-		jFrame = frame;
 	}
 	
 	/**
@@ -123,13 +121,6 @@ public class GameContainer
 	 */
 	public void startGame()
 	{
-		game.setMinimumSize(new Dimension(Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE));
-		game.setMaximumSize(new Dimension(Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE));
-		game.setPreferredSize(new Dimension(Game.WIDTH * Game.SCALE, Game.HEIGHT * Game.SCALE));
-		
-		jFrame.add(game, BorderLayout.CENTER);
-		jFrame.pack();
-		
 		this.game.start();
 	}
 	

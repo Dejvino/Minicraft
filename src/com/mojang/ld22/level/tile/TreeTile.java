@@ -70,6 +70,10 @@ public class TreeTile extends Tile {
 				level.setTile(xa, ya, Tile.treeSapling, 0);
 			}
 		}
+		// die
+		if (random.nextInt(2000) == 0) {
+			level.setTile(xt, yt, Tile.grass, 0);
+		}
 	}
 
 	public boolean mayPass(Level level, int x, int y, Entity e) {

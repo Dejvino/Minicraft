@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.lwjgl.input.Keyboard;
 
-public class InputHandler implements KeyListener {
+public class InputHandler {
 	public class Key {
 		public int presses, absorbs;
 		public boolean down, clicked;
@@ -59,48 +59,8 @@ public class InputHandler implements KeyListener {
 	}
 
 	public InputHandler(Game game) {
-		game.addKeyListener(this);
 	}
 
-	public void keyPressed(KeyEvent ke) {
-		toggleKE(ke, true);
-	}
-
-	public void keyReleased(KeyEvent ke) {
-		toggleKE(ke, false);
-	}
-
-	private void toggleKE(KeyEvent ke, boolean pressed) {
-		int keyCode = ke.getKeyCode();
-		if (keyCode == KeyEvent.VK_NUMPAD8) up.toggle(pressed);
-		if (keyCode == KeyEvent.VK_NUMPAD2) down.toggle(pressed);
-		if (keyCode == KeyEvent.VK_NUMPAD4) left.toggle(pressed);
-		if (keyCode == KeyEvent.VK_NUMPAD6) right.toggle(pressed);
-		if (keyCode == KeyEvent.VK_W) up.toggle(pressed);
-		if (keyCode == KeyEvent.VK_S) down.toggle(pressed);
-		if (keyCode == KeyEvent.VK_A) left.toggle(pressed);
-		if (keyCode == KeyEvent.VK_D) right.toggle(pressed);
-		if (keyCode == KeyEvent.VK_UP) up.toggle(pressed);
-		if (keyCode == KeyEvent.VK_DOWN) down.toggle(pressed);
-		if (keyCode == KeyEvent.VK_LEFT) left.toggle(pressed);
-		if (keyCode == KeyEvent.VK_RIGHT) right.toggle(pressed);
-
-		if (keyCode == KeyEvent.VK_TAB) menu.toggle(pressed);
-		//if (keyCode == KeyEvent.VK_ALT) menu.toggle(pressed); // THIS KEY SUCKS!
-		if (keyCode == KeyEvent.VK_ALT_GRAPH) menu.toggle(pressed);
-		if (keyCode == KeyEvent.VK_SPACE) attack.toggle(pressed);
-		if (keyCode == KeyEvent.VK_CONTROL) attack.toggle(pressed);
-		if (keyCode == KeyEvent.VK_NUMPAD0) attack.toggle(pressed);
-		if (keyCode == KeyEvent.VK_INSERT) attack.toggle(pressed);
-		if (keyCode == KeyEvent.VK_ENTER) menu.toggle(pressed);
-
-		if (keyCode == KeyEvent.VK_X) menu.toggle(pressed);
-		if (keyCode == KeyEvent.VK_C) attack.toggle(pressed);
-		
-		if (keyCode == KeyEvent.VK_F5) save.toggle(pressed);
-		if (keyCode == KeyEvent.VK_F9) load.toggle(pressed);
-	}
-	
 	public void toggle(int keyCode, boolean pressed) {
 		if (keyCode == Keyboard.KEY_NUMPAD8) up.toggle(pressed);
 		if (keyCode == Keyboard.KEY_NUMPAD2) down.toggle(pressed);

@@ -45,9 +45,13 @@ public class GameContainer
 	
 	private Game game;
 	private GameSetup setup;
+
+	private boolean saveloadEnabled;
 	
 	private GameContainer()
 	{
+		this.saveloadEnabled = true;
+		
 		this.setup = new GameSetup();
 		// TODO: load setup from file
 		
@@ -130,7 +134,6 @@ public class GameContainer
 	public void stopGame()
 	{
 		this.game.stop();
-		this.jFrame.remove(game);
 	}
 	
 	/**
@@ -139,6 +142,11 @@ public class GameContainer
 	 */
 	public void saveGame()
 	{
+		if (!this.saveloadEnabled) {
+			System.out.println("Game saving is disabled.\n");
+			return;
+		}
+		
 		try {
 			// create a file chooser
 			final JFileChooser fc = new JFileChooser();
@@ -181,6 +189,11 @@ public class GameContainer
 	 */
 	public void loadGame()
 	{
+		if (!this.saveloadEnabled) {
+			System.out.println("Game loading is disabled.\n");
+			return;
+		}
+		
 		try {
 			// create a file chooser
 			final JFileChooser fc = new JFileChooser();
@@ -233,6 +246,21 @@ public class GameContainer
 		GameContainer cont = GameContainer.getInstance();
 		cont.init();
 		cont.startGame();
+	}
+
+	public void setSaveLoadEnabled(boolean b)
+	{
+		this.saveloadEnabled = b;		
+	}
+	
+	/**
+	 * Returns whether the save-n-load feature can be used.
+	 * 
+	 * @return
+	 */
+	public boolean isSaveLoadEnabled()
+	{
+		return saveloadEnabled;
 	}
 
 }

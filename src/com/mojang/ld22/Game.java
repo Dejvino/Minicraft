@@ -1,24 +1,15 @@
 package com.mojang.ld22;
 
-import java.awt.BorderLayout;
-import java.awt.Canvas;
-import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.Serializable;
 import java.nio.ByteBuffer;
-import java.nio.IntBuffer;
 import java.util.Random;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFrame;
 
 import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
@@ -39,7 +30,7 @@ import com.mojang.ld22.screen.Menu;
 import com.mojang.ld22.screen.TitleMenu;
 import com.mojang.ld22.screen.WonMenu;
 
-public class Game extends Canvas implements Runnable, Externalizable
+public class Game implements Runnable, Externalizable
 {
 	private static final long serialVersionUID = 3L;
 	
@@ -260,7 +251,7 @@ public class Game extends Canvas implements Runnable, Externalizable
 			if (shouldRender) {
 				frames++;
 				try {
-					renderOgl();
+					render();
 				} catch (IllegalStateException e) {
 					// this is where it gets messed up so we bail out!
 					System.err.println("Game thread exiting, rendering failed:");
@@ -323,39 +314,6 @@ public class Game extends Canvas implements Runnable, Externalizable
 		player.y = (player.y >> 4) * 16 + 8;
 		level.add(player);
 
-	}
-
-	public void render() {
-		BufferStrategy bs = getBufferStrategy();
-		if (bs == null) {
-			createBufferStrategy(3);
-			requestFocus();
-			return;
-		}
-
-		renderView();
-
-		renderGui();
-
-		if (!hasFocus()) renderFocusNagger();
-
-		for (int y = 0; y < screen.h; y++) {
-			for (int x = 0; x < screen.w; x++) {
-				int cc = screen.pixels[x + y * screen.w];
-				if (cc < 255) pixels[x + y * WIDTH] = colors[cc];
-			}
-		}
-
-		Graphics g = bs.getDrawGraphics();
-		g.fillRect(0, 0, getWidth(), getHeight());
-
-		int ww = WIDTH * 3;
-		int hh = HEIGHT * 3;
-		int xo = (getWidth() - ww) / 2;
-		int yo = (getHeight() - hh) / 2;
-		g.drawImage(image, xo, yo, ww, hh, null);
-		g.dispose();
-		bs.show();
 	}
 	
 	/**
@@ -482,73 +440,28 @@ public class Game extends Canvas implements Runnable, Externalizable
 		//GL11.glDrawPixels(screen.w, screen.h, GL11.GL_RGB, GL11.GL_UNSIGNED_BYTE, oglScreen);
 	}
 
-	public void renderOgl() {
+	public void render() {
 		// Clear the screen and depth buffer
 		GL11.glClear(GL11.GL_COLOR_BUFFER_BIT | GL11.GL_DEPTH_BUFFER_BIT);
 		screen.clear(-1);
 
-		renderOglView();
+		// render game view
+		renderView();
 
-		renderOglGui();
+		// render GUI overlay
+		renderGui();
 
+		// render out-of-focus info
 		if (!hasFocus()) {
 			screen.clear(-1);
 			renderFocusNagger();
 			renderScreen(screen, 0.9);
 		}
-
-		// backward compatible rendering of EVERYTHING
-		//renderScreen(screen);
 		
 		Display.update();
 	}
 	
 	private void renderView()
-	{
-		if (this.gameTime <= 0) {
-			return;
-		}
-		
-		int xScroll = player.x - screen.w / 2;
-		int yScroll = player.y - (screen.h - 8) / 2;
-		// we have a nice border, so the player stays in the center!
-		//if (xScroll < 16) xScroll = 16;
-		//if (yScroll < 16) yScroll = 16;
-		//if (xScroll > level.w * 16 - screen.w - 16) xScroll = level.w * 16 - screen.w - 16;
-		//if (yScroll > level.h * 16 - screen.h - 16) yScroll = level.h * 16 - screen.h - 16;
-		
-		if (currentLevel > 3) {
-			int col = Color.get(20, 20, 121, 121);
-			for (int y = 0; y < 14; y++)
-				for (int x = 0; x < 24; x++) {
-					screen.render(x * 8 - ((xScroll / 4) & 7), y * 8 - ((yScroll / 4) & 7), 0, col, 0);
-				}
-		}
-
-	    // render level tiles
-		level.renderBackground(screen, xScroll, yScroll);
-		
-		// render level sprites
-		level.renderSprites(screen, xScroll, yScroll);
-		
-		// prepare light-map
-		lightScreen.clear(0);
-		level.renderLight(lightScreen, xScroll, yScroll);
-		
-		// render fog-of-war
-		if (!setup.disableFogOfWar) {
-			fogScreen.clear(0);
-			level.renderFog(fogScreen, lightScreen, xScroll, yScroll);
-			screen.overlay(fogScreen, xScroll, yScroll);
-		}
-		
-		// render darkness
-		if (currentLevel < 3 && setup.disableFogOfWar) {
-			screen.overlay(lightScreen, xScroll, yScroll);
-		}
-	}
-
-	private void renderOglView()
 	{
 		if (this.gameTime <= 0) {
 			return;
@@ -587,54 +500,17 @@ public class Game extends Canvas implements Runnable, Externalizable
 		if (!setup.disableFogOfWar) {
 			fogScreen.clear(0);
 			level.renderFog(fogScreen, lightScreen, xScroll, yScroll);
-			//screen.overlay(fogScreen, xScroll, yScroll);
 			renderScreenOverlay(fogScreen, 1);
 		}
 		
 		
 		// render darkness
 		if (currentLevel < 3 && setup.disableFogOfWar) {
-			//screen.overlay(lightScreen, xScroll, yScroll);
+			renderScreenOverlay(lightScreen, 1);
 		}	
 	}
 
 	private void renderGui() {
-		if (this.gameTime > 0) {
-			for (int y = 0; y < 2; y++) {
-				for (int x = 0; x < 20; x++) {
-					screen.render(x * 8, screen.h - 16 + y * 8, 0 + 12 * 32, Color.get(000, 000, 000, 000), 0);
-				}
-			}
-	
-			for (int i = 0; i < 10; i++) {
-				if (i < player.health)
-					screen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(000, 200, 500, 533), 0);
-				else
-					screen.render(i * 8, screen.h - 16, 0 + 12 * 32, Color.get(000, 100, 000, 000), 0);
-	
-				if (player.staminaRechargeDelay > 0) {
-					if (player.staminaRechargeDelay / 4 % 2 == 0)
-						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 555, 000, 000), 0);
-					else
-						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 110, 000, 000), 0);
-				} else {
-					if (i < player.stamina)
-						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 220, 550, 553), 0);
-					else
-						screen.render(i * 8, screen.h - 8, 1 + 12 * 32, Color.get(000, 110, 000, 000), 0);
-				}
-			}
-			if (player.activeItem != null) {
-				player.activeItem.renderInventory(screen, 10 * 8, screen.h - 16);
-			}
-		}
-
-		if (menu != null) {
-			menu.render(screen);
-		}
-	}
-	
-	private void renderOglGui() {
 		if (this.gameTime > 0) {
 			tmpScreen.clear(-1);
 			
